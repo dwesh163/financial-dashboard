@@ -17,11 +17,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
+    jwt: async ({ token, account }) => {
+      if (account?.access_token) {
+        token.accessToken = account.access_token;
+      }
+      return token;
+    },
     session: async ({ session, token }) => {
       if (session.user && token.sub) {
         session.user.id = token.sub;
+      }
+      if (token.accessToken) {
+        session.accessToken = token.accessToken as string;
       }
       return session;
     },
   },
 });
+
+export async function getUser() {
+  const session = await auth();
+  if (!session?.user) throw new Error("User not authenticated");
+  return session?.user;
+}
+
+export async function getSession() {
+  const session = await auth();
+  if (!session) throw new Error("User not authenticated");
+  return session;
+}
