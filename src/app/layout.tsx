@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Lexend } from "next/font/google";
 import { SessionProvider } from "@/components/providers/session";
 import "./globals.css";
@@ -7,6 +7,13 @@ const lexend = Lexend({
   variable: "--font-sans",
   subsets: ["latin"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "JCM - Finances",

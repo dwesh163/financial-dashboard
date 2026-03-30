@@ -24,7 +24,6 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
   const sources = all.filter((c) => SOURCE_TYPES.includes(c.type));
   const others = all.filter((c) => ![...COMMERCE_TYPES, ...PERSON_TYPES, ...SOURCE_TYPES].includes(c.type));
 
-  const _isCommerce = type === "commerce" || (!type && commerces.length > 0);
   const activeTab = type === "personne" ? "personne" : type === "source" ? "source" : "commerce";
 
   const tabs = [
@@ -36,25 +35,25 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
   const displayed = activeTab === "personne" ? personnes : activeTab === "source" ? sources : commerces;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Contacts</h1>
+        <h1 className="text-sm font-semibold text-foreground">Contacts</h1>
         <p className="text-xs text-muted-foreground mt-0.5">{all.length} contacts</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-card border border-border rounded-lg p-1 w-fit">
+      {/* Tabs — full width on mobile */}
+      <div className="flex gap-1 bg-card border border-border rounded-lg p-1">
         {tabs.map(({ key, label, icon: Icon, items }) => (
           <a
             key={key}
             href={`/contacts?type=${key}`}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
               activeTab === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Icon className="w-3.5 h-3.5" />
-            {label}
-            <span className={`ml-0.5 text-[10px] ${activeTab === key ? "opacity-70" : "opacity-50"}`}>
+            <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">{label}</span>
+            <span className={`text-[10px] flex-shrink-0 ${activeTab === key ? "opacity-70" : "opacity-50"}`}>
               ({items.length})
             </span>
           </a>
@@ -63,22 +62,22 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
 
       {/* List */}
       {displayed.length === 0 ? (
-        <div className="text-center py-12 text-sm text-muted-foreground bg-card border border-border rounded-xl">
+        <div className="text-center py-12 text-sm text-muted-foreground border border-border rounded-lg">
           Aucun contact dans cette catégorie.
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="grid grid-cols-[1fr_140px] gap-4 px-4 py-2.5 border-b border-border bg-muted/30">
-            <span className="text-xs font-medium text-muted-foreground">Nom</span>
-            <span className="text-xs font-medium text-muted-foreground">Type</span>
+        <div className="rounded-lg border border-border overflow-hidden">
+          <div className="grid grid-cols-[1fr_auto] gap-4 px-4 py-2 bg-muted/40 border-b border-border">
+            <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground">Nom</span>
+            <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground">Type</span>
           </div>
           {displayed.map((c) => (
             <div
               key={c.name}
-              className="grid grid-cols-[1fr_140px] gap-4 items-center px-4 py-3 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+              className="flex items-center justify-between gap-4 px-4 py-3 border-b border-border last:border-0"
             >
               <span className="text-sm text-foreground">{c.name}</span>
-              <span className="text-xs text-muted-foreground">{TYPE_LABELS[c.type] ?? c.type}</span>
+              <span className="text-xs text-muted-foreground flex-shrink-0">{TYPE_LABELS[c.type] ?? c.type}</span>
             </div>
           ))}
         </div>
@@ -86,8 +85,7 @@ export default async function ContactsPage({ searchParams }: { searchParams: Pro
 
       {others.length > 0 && (
         <p className="text-xs text-muted-foreground">
-          + {others.length} contact{others.length > 1 ? "s" : ""} non catégorisé
-          {others.length > 1 ? "s" : ""}
+          + {others.length} contact{others.length > 1 ? "s" : ""} non catégorisé{others.length > 1 ? "s" : ""}
         </p>
       )}
     </div>

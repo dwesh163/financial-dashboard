@@ -16,19 +16,19 @@ import {
 function AmountBadge({ tx }: { tx: Transaction }) {
   if (tx.in !== null && tx.in > 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-primary font-medium">
-        <ArrowUpRight className="w-3 h-3" />+{formatChf(tx.in)}
+      <span className="inline-flex items-center gap-0.5 text-primary font-semibold tabular-nums">
+        <ArrowUpRight className="w-3.5 h-3.5" />+{formatChf(tx.in)}
       </span>
     );
   }
   if (tx.out !== null && tx.out > 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-destructive font-medium">
-        <ArrowDownLeft className="w-3 h-3" />-{formatChf(tx.out)}
+      <span className="inline-flex items-center gap-0.5 text-destructive font-semibold tabular-nums">
+        <ArrowDownLeft className="w-3.5 h-3.5" />-{formatChf(tx.out)}
       </span>
     );
   }
-  return <span className="text-muted-foreground">—</span>;
+  return <span className="text-muted-foreground/30">—</span>;
 }
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -46,19 +46,29 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   const totalOut = transactions.reduce((s, t) => s + (t.out ?? 0), 0);
   const delta = totalIn - totalOut;
 
+  const kpis = [
+    { label: "Entrées", value: totalIn, color: "positive" as const },
+    { label: "Sorties", value: totalOut, color: "negative" as const },
+    { label: "Résultat", value: delta, color: "auto" as const },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3 pt-1">
         <div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-            <Link href="/" className="hover:text-foreground transition-colors">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+            <Link href="/" className="hover:text-foreground transition-colors hidden md:inline">
               Comptes
             </Link>
+            <span className="hidden md:inline">/</span>
+            <Link href="/events" className="hover:text-foreground transition-colors">
+              Événements
+            </Link>
             <span>/</span>
-            <span>Événements</span>
+            <span className="truncate max-w-[120px] md:max-w-none">{sheet.title}</span>
           </div>
-          <h1 className="text-xl font-semibold text-foreground">{sheet.title}</h1>
+          <h1 className="text-lg md:text-sm font-bold md:font-semibold text-foreground">{sheet.title}</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
             {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
           </p>
@@ -67,78 +77,107 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           href={`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=${sheet.sheetId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg px-3 py-1.5"
+          className="flex-shrink-0 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg px-2.5 py-1.5"
         >
-          <ExternalLink className="w-3.5 h-3.5" />
-          Ouvrir dans Sheets
+          <ExternalLink className="w-3 h-3" />
+          <span>Sheets</span>
         </a>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: "Total entrées", value: totalIn, positive: true },
-          { label: "Total sorties", value: totalOut, positive: false },
-          { label: "Résultat net", value: delta, colored: true },
-        ].map(({ label, value, positive, colored }) => (
-          <div key={label} className="bg-card border border-border rounded-xl px-4 py-3">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">{label}</p>
-            <p
-              className={`text-xl font-semibold tabular-nums ${
-                colored
-                  ? value > 0
-                    ? "text-primary"
-                    : value < 0
-                      ? "text-destructive"
-                      : "text-foreground"
-                  : positive
-                    ? "text-primary"
-                    : "text-destructive"
-              }`}
-            >
-              {value === 0 ? "—" : formatChf(value)}
-            </p>
-          </div>
-        ))}
+      {/* KPI strip */}
+      <div className="grid grid-cols-3 gap-px bg-border rounded-xl overflow-hidden border border-border">
+        {kpis.map(({ label, value, color }) => {
+          const cls =
+            color === "positive"
+              ? "text-primary"
+              : color === "negative"
+                ? "text-destructive"
+                : value > 0
+                  ? "text-primary"
+                  : value < 0
+                    ? "text-destructive"
+                    : "text-foreground";
+          return (
+            <div key={label} className="bg-card px-3 md:px-4 py-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">{label}</p>
+              <p className={`text-sm md:text-base font-bold tabular-nums leading-none ${cls}`}>
+                {value === 0 ? "—" : formatChf(value)}
+              </p>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Transactions table */}
+      {/* Transactions */}
       {transactions.length === 0 ? (
-        <div className="text-center py-16 text-sm text-muted-foreground bg-card border border-border rounded-xl">
-          Aucune transaction pour cet événement.
+        <div className="text-center py-16 text-sm text-muted-foreground border border-border rounded-xl">
+          Aucune transaction.
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          {/* Head */}
-          <div className="grid grid-cols-[90px_1fr_1fr_1fr_130px_48px] gap-3 px-4 py-2.5 border-b border-border bg-muted/50">
-            <span className="text-[11px] uppercase tracking-wide font-medium text-muted-foreground">Date</span>
-            <span className="text-[11px] uppercase tracking-wide font-medium text-muted-foreground">Description</span>
-            <span className="text-[11px] uppercase tracking-wide font-medium text-muted-foreground">Source</span>
-            <span className="text-[11px] uppercase tracking-wide font-medium text-muted-foreground">Destination</span>
-            <span className="text-[11px] uppercase tracking-wide font-medium text-muted-foreground text-right">
-              Montant
-            </span>
-            <span className="text-[11px] uppercase tracking-wide font-medium text-muted-foreground text-center">
-              Pièce
-            </span>
+        <>
+          {/* Mobile: transaction cards */}
+          <div className="md:hidden rounded-xl border border-border overflow-hidden bg-card">
+            {transactions.map((tx, i) => (
+              <div
+                key={`${tx.date}-${i}`}
+                className="flex items-center gap-3 px-4 py-3.5 border-b border-border last:border-0"
+              >
+                {/* Left: colored indicator */}
+                <div
+                  className={`w-1 self-stretch rounded-full flex-shrink-0 ${
+                    tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border"
+                  }`}
+                />
+                {/* Center: info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{tx.description || "—"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                    <span className="font-mono">{tx.date}</span>
+                    {tx.source ? <span> · {tx.source}</span> : null}
+                    {tx.destination ? <span className="text-muted-foreground/60"> → {tx.destination}</span> : null}
+                  </p>
+                </div>
+                {/* Right: amount */}
+                <div className="flex-shrink-0 text-right">
+                  <AmountBadge tx={tx} />
+                  {tx.proof && <p className="text-[10px] text-muted-foreground mt-0.5">{tx.proof}</p>}
+                </div>
+              </div>
+            ))}
           </div>
 
-          {transactions.map((tx, i) => (
-            <div
-              key={`${tx.date}-${i}`}
-              className="grid grid-cols-[90px_1fr_1fr_1fr_130px_48px] gap-3 items-center px-4 py-2.5 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-            >
-              <span className="text-xs text-muted-foreground font-mono tabular-nums">{tx.date}</span>
-              <span className="text-xs text-foreground truncate">{tx.description || "—"}</span>
-              <span className="text-xs text-muted-foreground truncate">{tx.source}</span>
-              <span className="text-xs text-muted-foreground truncate">{tx.destination}</span>
-              <div className="text-xs text-right tabular-nums">
-                <AmountBadge tx={tx} />
-              </div>
-              <span className="text-xs text-muted-foreground text-center">{tx.proof || "—"}</span>
+          {/* Desktop: full table */}
+          <div className="hidden md:block rounded-lg border border-border overflow-hidden">
+            <div className="grid grid-cols-[90px_1fr_1fr_1fr_130px_48px] gap-3 px-4 py-2 bg-muted/40 border-b border-border">
+              {["Date", "Description", "Source", "Destination"].map((col) => (
+                <span key={col} className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground">
+                  {col}
+                </span>
+              ))}
+              <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground text-right">
+                Montant
+              </span>
+              <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground text-center">
+                Pièce
+              </span>
             </div>
-          ))}
-        </div>
+            {transactions.map((tx, i) => (
+              <div
+                key={`${tx.date}-${i}`}
+                className="grid grid-cols-[90px_1fr_1fr_1fr_130px_48px] gap-3 items-center px-4 py-2 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+              >
+                <span className="text-xs text-muted-foreground font-mono tabular-nums">{tx.date}</span>
+                <span className="text-xs text-foreground truncate">{tx.description || "—"}</span>
+                <span className="text-xs text-muted-foreground truncate">{tx.source}</span>
+                <span className="text-xs text-muted-foreground truncate">{tx.destination}</span>
+                <div className="text-xs text-right">
+                  <AmountBadge tx={tx} />
+                </div>
+                <span className="text-xs text-muted-foreground text-center">{tx.proof || "—"}</span>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
