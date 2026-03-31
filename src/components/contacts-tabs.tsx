@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Building2, CreditCard } from "lucide-react";
-import { TYPE_LABELS } from "@/services/contacts";
+import { useState } from "react";
 import type { Contact } from "@/services/contacts";
+import { TYPE_LABELS } from "@/services/contacts";
 
 interface Props {
   commerces: Contact[];

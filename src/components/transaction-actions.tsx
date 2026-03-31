@@ -1,20 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowDownLeft,
-  ArrowLeftRight,
-  ArrowUpRight,
-  Loader2,
-  Pencil,
-  Trash2,
-} from "lucide-react";
+import { useState } from "react";
+import { PersonSelect } from "@/components/person-select";
+import { ProofField } from "@/components/proof-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { PersonSelect } from "@/components/person-select";
-import { ProofField } from "@/components/proof-field";
 import { cn } from "@/lib/utils";
 import type { Contact } from "@/services/contacts";
 import type { Transaction, TransactionType } from "@/services/transactions";
@@ -30,7 +23,13 @@ interface Props {
 const TYPE_OPTIONS = [
   { value: "in" as const, label: "Entrée", icon: ArrowDownLeft, color: "text-primary", bg: "bg-primary/10" },
   { value: "out" as const, label: "Sortie", icon: ArrowUpRight, color: "text-destructive", bg: "bg-destructive/10" },
-  { value: "transfer" as const, label: "Transfert", icon: ArrowLeftRight, color: "text-foreground", bg: "bg-foreground/10" },
+  {
+    value: "transfer" as const,
+    label: "Transfert",
+    icon: ArrowLeftRight,
+    color: "text-foreground",
+    bg: "bg-foreground/10",
+  },
 ] as const;
 
 function toIsoDate(display: string): string {
@@ -60,9 +59,7 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
   const initialType = detectType(transaction);
   const [type, setType] = useState<TransactionType>(initialType);
   const [date, setDate] = useState(toIsoDate(transaction.date));
-  const [amount, setAmount] = useState(
-    String(transaction.in ?? transaction.out ?? ""),
-  );
+  const [amount, setAmount] = useState(String(transaction.in ?? transaction.out ?? ""));
   const [source, setSource] = useState(transaction.source);
   const [destination, setDestination] = useState(transaction.destination);
   const [person, setPerson] = useState(transaction.person);
@@ -92,8 +89,13 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
   function handleTypeChange(newType: TransactionType) {
     setType(newType);
     if (person) {
-      if (newType === "in") { setSource(person); setDestination(""); }
-      else if (newType === "out") { setDestination(person); setSource(""); }
+      if (newType === "in") {
+        setSource(person);
+        setDestination("");
+      } else if (newType === "out") {
+        setDestination(person);
+        setSource("");
+      }
     }
   }
 
@@ -164,7 +166,10 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
       <div className="flex items-center justify-end gap-1">
         <button
           type="button"
-          onClick={() => { resetEdit(); setEditOpen(true); }}
+          onClick={() => {
+            resetEdit();
+            setEditOpen(true);
+          }}
           className="p-1.5 text-muted-foreground/40 hover:text-foreground transition-colors"
           title="Modifier"
         >
@@ -181,14 +186,22 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
       </div>
 
       {/* ── Edit dialog ──────────────────────────────────── */}
-      <Dialog open={editOpen} onOpenChange={(v) => { setEditOpen(v); if (!v) resetEdit(); }}>
+      <Dialog
+        open={editOpen}
+        onOpenChange={(v) => {
+          setEditOpen(v);
+          if (!v) resetEdit();
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Pencil className="w-4 h-4 text-primary" />
               Modifier la transaction
             </DialogTitle>
-            <p className="font-mono text-[10px] text-muted-foreground">{sheetTitle} · ligne {transaction.rowIndex}</p>
+            <p className="font-mono text-[10px] text-muted-foreground">
+              {sheetTitle} · ligne {transaction.rowIndex}
+            </p>
           </DialogHeader>
 
           <form onSubmit={handleUpdate} className="space-y-4">
@@ -222,8 +235,13 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Montant (CHF)</p>
                 <Input
-                  type="number" step="0.01" min="0.01" placeholder="0.00"
-                  value={amount} onChange={(e) => setAmount(e.target.value)} required
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -245,13 +263,21 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
             {showDestination && (
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Vers (destination)</p>
-                <Input placeholder="Destination..." value={destination} onChange={(e) => setDestination(e.target.value)} />
+                <Input
+                  placeholder="Destination..."
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                />
               </div>
             )}
 
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Description</p>
-              <Input placeholder="Description..." value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Input
+                placeholder="Description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Pièce</p>
@@ -263,7 +289,15 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
             )}
 
             <div className="flex justify-end gap-2 pt-2 border-t border-border">
-              <Button type="button" variant="ghost" onClick={() => { setEditOpen(false); resetEdit(); }} disabled={loading}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setEditOpen(false);
+                  resetEdit();
+                }}
+                disabled={loading}
+              >
                 Annuler
               </Button>
               <Button type="submit" disabled={loading} className="min-w-[110px]">

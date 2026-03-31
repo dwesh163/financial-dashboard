@@ -3,13 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { setYearCookie } from "@/app/actions";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Props = {
   years: number[];

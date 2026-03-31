@@ -1,20 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, FileText, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowDownLeft,
-  ArrowLeftRight,
-  ArrowUpRight,
-  FileText,
-  Loader2,
-  Plus,
-} from "lucide-react";
+import { useState } from "react";
+import { PersonSelect } from "@/components/person-select";
+import { ProofField } from "@/components/proof-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { PersonSelect } from "@/components/person-select";
-import { ProofField } from "@/components/proof-field";
 import { cn } from "@/lib/utils";
 import type { Contact } from "@/services/contacts";
 import type { TransactionType } from "@/services/transactions";
@@ -28,7 +21,13 @@ interface Props {
 const TYPE_OPTIONS = [
   { value: "in" as const, label: "Entrée", icon: ArrowDownLeft, color: "text-primary", bg: "bg-primary/10" },
   { value: "out" as const, label: "Sortie", icon: ArrowUpRight, color: "text-destructive", bg: "bg-destructive/10" },
-  { value: "transfer" as const, label: "Transfert", icon: ArrowLeftRight, color: "text-foreground", bg: "bg-foreground/10" },
+  {
+    value: "transfer" as const,
+    label: "Transfert",
+    icon: ArrowLeftRight,
+    color: "text-foreground",
+    bg: "bg-foreground/10",
+  },
 ] as const;
 
 function toDisplayDate(iso: string): string {
@@ -134,10 +133,7 @@ export function AddTransactionDialog({ spreadsheetId, sheetTitle, persons }: Pro
 
   return (
     <>
-      <Button
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 font-mono text-xs"
-      >
+      <Button onClick={() => setOpen(true)} className="flex items-center gap-2 font-mono text-xs">
         <Plus className="w-3.5 h-3.5" />
         Ajouter
       </Button>
@@ -184,12 +180,7 @@ export function AddTransactionDialog({ spreadsheetId, sheetTitle, persons }: Pro
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Date</p>
-                <Input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                />
+                <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
               </div>
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Montant (CHF)</p>
@@ -221,23 +212,15 @@ export function AddTransactionDialog({ spreadsheetId, sheetTitle, persons }: Pro
             {/* Source */}
             {showSource && (
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-                  De (source)
-                </p>
-                <Input
-                  placeholder="Source / compte..."
-                  value={source}
-                  onChange={(e) => setSource(e.target.value)}
-                />
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">De (source)</p>
+                <Input placeholder="Source / compte..." value={source} onChange={(e) => setSource(e.target.value)} />
               </div>
             )}
 
             {/* Destination */}
             {showDestination && (
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
-                  Vers (destination)
-                </p>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Vers (destination)</p>
                 <Input
                   placeholder="Destination / bénéficiaire..."
                   value={destination}
@@ -264,9 +247,7 @@ export function AddTransactionDialog({ spreadsheetId, sheetTitle, persons }: Pro
 
             {/* Error */}
             {error && (
-              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">
-                {error}
-              </p>
+              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>
             )}
 
             {/* Actions */}

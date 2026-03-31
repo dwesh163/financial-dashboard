@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/services/auth";
-import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
 import { searchFiles } from "@/lib/google/drive";
+import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
+import { auth } from "@/services/auth";
 
 const SHEET_NAME = "Comptes - 2026";
 

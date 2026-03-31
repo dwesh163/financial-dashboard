@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/services/auth";
 import { appendSheetRow, sheetRange } from "@/lib/google/sheets";
+import { auth } from "@/services/auth";
 import { getSpreadsheetId } from "@/services/sheets";
 import { getSelectedYear } from "@/services/year";
 
@@ -34,10 +34,7 @@ export async function POST(req: NextRequest) {
       : [];
 
   if (names.length === 0) {
-    return NextResponse.json(
-      { error: 'Fournir "persons" (tableau) ou "name" (string)' },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: 'Fournir "persons" (tableau) ou "name" (string)' }, { status: 400 });
   }
 
   const selectedYear = await getSelectedYear();

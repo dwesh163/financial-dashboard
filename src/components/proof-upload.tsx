@@ -1,7 +1,7 @@
 "use client";
 
+import { CheckCircle2, Loader2, Paperclip } from "lucide-react";
 import { useRef, useState } from "react";
-import { Loader2, Paperclip, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -46,13 +46,7 @@ export function ProofUpload({ onUploaded, className }: Props) {
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
-      <input
-        ref={inputRef}
-        type="file"
-        accept="application/pdf"
-        className="hidden"
-        onChange={handleChange}
-      />
+      <input ref={inputRef} type="file" accept="application/pdf" className="hidden" onChange={handleChange} />
       <button
         type="button"
         onClick={() => inputRef.current?.click()}

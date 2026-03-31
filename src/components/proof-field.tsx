@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { FileText, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
 import { ProofUpload } from "@/components/proof-upload";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   value: string;
@@ -12,14 +12,17 @@ interface Props {
 }
 
 function isDriveUrl(v: string) {
-  try { new URL(v); return true; } catch { return false; }
+  try {
+    new URL(v);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function ProofField({ value, onChange, placeholder = "N° de pièce..." }: Props) {
   // When loading an existing URL (edit mode) we show a generic label
-  const [driveLabel, setDriveLabel] = useState<string | null>(
-    () => isDriveUrl(value) ? "Fichier PDF" : null,
-  );
+  const [driveLabel, setDriveLabel] = useState<string | null>(() => (isDriveUrl(value) ? "Fichier PDF" : null));
 
   function handleUploaded({ name, webViewLink }: { name: string; webViewLink: string }) {
     setDriveLabel(name);
@@ -59,7 +62,10 @@ export function ProofField({ value, onChange, placeholder = "N° de pièce..." }
       <Input
         placeholder={placeholder}
         value={value}
-        onChange={(e) => { setDriveLabel(null); onChange(e.target.value); }}
+        onChange={(e) => {
+          setDriveLabel(null);
+          onChange(e.target.value);
+        }}
       />
       <ProofUpload onUploaded={handleUploaded} />
     </div>

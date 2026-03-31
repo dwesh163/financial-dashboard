@@ -1,16 +1,11 @@
 import { UserRound } from "lucide-react";
 import { AddPersonDialog } from "@/components/add-person-dialog";
 import { ContactsTabs } from "@/components/contacts-tabs";
-import { getSession } from "@/services/auth";
 import { getSheetValues, sheetRange } from "@/lib/google/sheets";
-import { getSpreadsheetId } from "@/services/sheets";
-import {
-  COMMERCE_TYPES,
-  PERSON_TYPES,
-  SOURCE_TYPES,
-  parseContacts,
-} from "@/services/contacts";
+import { getSession } from "@/services/auth";
 import type { Contact } from "@/services/contacts";
+import { COMMERCE_TYPES, PERSON_TYPES, parseContacts, SOURCE_TYPES } from "@/services/contacts";
+import { getSpreadsheetId } from "@/services/sheets";
 import { getSelectedYear } from "@/services/year";
 
 function PersonTable({ contacts }: { contacts: Contact[] }) {
@@ -65,15 +60,12 @@ export default async function ContactsPage() {
 
       {/* Two-column layout on desktop */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-
         {/* ── Personnes ─────────────────────────────────────── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <UserRound className="w-4 h-4 text-primary" />
-              <h2 className="font-mono text-sm font-semibold text-foreground uppercase tracking-[0.15em]">
-                Personnes
-              </h2>
+              <h2 className="font-mono text-sm font-semibold text-foreground uppercase tracking-[0.15em]">Personnes</h2>
               <span className="font-mono text-xs text-muted-foreground">({personnes.length})</span>
             </div>
             <AddPersonDialog />

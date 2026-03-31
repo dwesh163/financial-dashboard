@@ -102,7 +102,7 @@ export async function deleteSheetRow(
               sheetId,
               dimension: "ROWS",
               startIndex: rowIndex - 1, // 0-indexed
-              endIndex: rowIndex,       // exclusive
+              endIndex: rowIndex, // exclusive
             },
           },
         },

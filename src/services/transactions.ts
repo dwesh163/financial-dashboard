@@ -1,18 +1,18 @@
 import { parseChf } from "@/lib/chf";
-import { appendSheetRow, updateSheetRow, deleteSheetRow, sheetRange } from "@/lib/google/sheets";
+import { appendSheetRow, deleteSheetRow, sheetRange, updateSheetRow } from "@/lib/google/sheets";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Transaction = {
-  rowIndex: number;     // 1-indexed row in the sheet (row 1 = header, row 2 = first data row)
+  rowIndex: number; // 1-indexed row in the sheet (row 1 = header, row 2 = first data row)
   date: string;
   out: number | null;
   in: number | null;
-  source: string;       // D
-  destination: string;  // E
-  person: string;       // F
-  description: string;  // G
-  proof: string;        // H
+  source: string; // D
+  destination: string; // E
+  person: string; // F
+  description: string; // G
+  proof: string; // H
 };
 
 export type TransactionType = "in" | "out" | "transfer";

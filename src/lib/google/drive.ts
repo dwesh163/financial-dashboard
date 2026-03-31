@@ -1,33 +1,27 @@
-import { Readable } from "stream";
 import { cache } from "react";
+import { Readable } from "stream";
 import { driveClient } from "./client";
 
 export type DriveFile = { id: string; name: string };
 
 // ─── Search (memoized per request) ───────────────────────────────────────────
 
-export const searchFiles = cache(
-  async (accessToken: string, query: string, pageSize = 10): Promise<DriveFile[]> => {
-    const drive = driveClient(accessToken);
-    const res = await drive.files.list({
-      q: query,
-      fields: "files(id,name)",
-      pageSize,
-    });
-    return (res.data.files ?? []) as DriveFile[];
-  },
-);
+export const searchFiles = cache(async (accessToken: string, query: string, pageSize = 10): Promise<DriveFile[]> => {
+  const drive = driveClient(accessToken);
+  const res = await drive.files.list({
+    q: query,
+    fields: "files(id,name)",
+    pageSize,
+  });
+  return (res.data.files ?? []) as DriveFile[];
+});
 
 // ─── Folder management ────────────────────────────────────────────────────────
 
 /**
  * Find a folder by name (optionally inside a parent). Creates it if missing.
  */
-export async function findOrCreateFolder(
-  accessToken: string,
-  name: string,
-  parentId?: string,
-): Promise<string> {
+export async function findOrCreateFolder(accessToken: string, name: string, parentId?: string): Promise<string> {
   const drive = driveClient(accessToken);
 
   const parentClause = parentId ? ` and '${parentId}' in parents` : "";

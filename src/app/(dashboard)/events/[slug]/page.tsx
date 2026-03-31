@@ -3,17 +3,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddTransactionDialog } from "@/components/add-transaction-dialog";
 import { TransactionActions } from "@/components/transaction-actions";
+import { formatChf } from "@/lib/chf";
+import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
+import { toSlug } from "@/lib/utils";
 import { getSession } from "@/services/auth";
 import { filterPersons, parseContacts } from "@/services/contacts";
-import { formatChf } from "@/lib/chf";
-import { toSlug } from "@/lib/utils";
-import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
 import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/sheets";
 import { parseTransactions, type Transaction } from "@/services/transactions";
 import { getSelectedYear } from "@/services/year";
 
 function isDriveUrl(v: string) {
-  try { new URL(v); return true; } catch { return false; }
+  try {
+    new URL(v);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function ProofDisplay({ proof }: { proof: string }) {
@@ -36,18 +41,10 @@ function ProofDisplay({ proof }: { proof: string }) {
 
 function AmountBadge({ tx }: { tx: Transaction }) {
   if (tx.in !== null && tx.in > 0) {
-    return (
-      <span className="font-mono font-bold tabular-nums text-primary">
-        +{formatChf(tx.in)}
-      </span>
-    );
+    return <span className="font-mono font-bold tabular-nums text-primary">+{formatChf(tx.in)}</span>;
   }
   if (tx.out !== null && tx.out > 0) {
-    return (
-      <span className="font-mono font-bold tabular-nums text-destructive">
-        −{formatChf(tx.out)}
-      </span>
-    );
+    return <span className="font-mono font-bold tabular-nums text-destructive">−{formatChf(tx.out)}</span>;
   }
   return <span className="font-mono text-muted-foreground/30">—</span>;
 }
@@ -129,11 +126,15 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         <div className="md:hidden divide-y divide-border">
           {kpis.map(({ label, value, color }) => {
             const cls =
-              color === "positive" ? "text-primary"
-              : color === "negative" ? "text-destructive"
-              : value > 0 ? "text-primary"
-              : value < 0 ? "text-destructive"
-              : "text-foreground";
+              color === "positive"
+                ? "text-primary"
+                : color === "negative"
+                  ? "text-destructive"
+                  : value > 0
+                    ? "text-primary"
+                    : value < 0
+                      ? "text-destructive"
+                      : "text-foreground";
             return (
               <div key={label} className="flex items-center justify-between px-4 py-3.5 bg-card">
                 <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
@@ -147,11 +148,15 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         <div className="hidden md:grid md:grid-cols-3 gap-px bg-border">
           {kpis.map(({ label, value, color }) => {
             const cls =
-              color === "positive" ? "text-primary"
-              : color === "negative" ? "text-destructive"
-              : value > 0 ? "text-primary"
-              : value < 0 ? "text-destructive"
-              : "text-foreground";
+              color === "positive"
+                ? "text-primary"
+                : color === "negative"
+                  ? "text-destructive"
+                  : value > 0
+                    ? "text-primary"
+                    : value < 0
+                      ? "text-destructive"
+                      : "text-foreground";
             return (
               <div key={label} className="bg-card px-5 py-5">
                 <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-3">{label}</p>
@@ -175,7 +180,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           <div className="md:hidden border border-border">
             {transactions.map((tx) => (
               <div key={tx.rowIndex} className="flex items-stretch border-b border-border last:border-0">
-                <div className={`w-0.5 flex-shrink-0 ${tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border"}`} />
+                <div
+                  className={`w-0.5 flex-shrink-0 ${tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border"}`}
+                />
                 <div className="flex items-center gap-3 flex-1 px-4 py-3.5 min-w-0">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground truncate">{tx.description || "—"}</p>
@@ -184,13 +191,15 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                       {tx.source ? <span> · {tx.source}</span> : null}
                       {tx.destination ? <span className="opacity-60"> → {tx.destination}</span> : null}
                     </p>
-                    {tx.person && (
-                      <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>
-                    )}
+                    {tx.person && <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>}
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     <AmountBadge tx={tx} />
-                    {tx.proof && <p className="mt-0.5"><ProofDisplay proof={tx.proof} /></p>}
+                    {tx.proof && (
+                      <p className="mt-0.5">
+                        <ProofDisplay proof={tx.proof} />
+                      </p>
+                    )}
                     <TransactionActions transaction={tx} {...actionProps} />
                   </div>
                 </div>
@@ -227,7 +236,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 <div className="text-sm text-right">
                   <AmountBadge tx={tx} />
                 </div>
-                <div className="text-center"><ProofDisplay proof={tx.proof} /></div>
+                <div className="text-center">
+                  <ProofDisplay proof={tx.proof} />
+                </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <TransactionActions transaction={tx} {...actionProps} />
                 </div>

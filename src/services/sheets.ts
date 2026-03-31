@@ -1,21 +1,25 @@
 // ─── Re-exports ───────────────────────────────────────────────────────────────
 // All Google lib calls
-export { getSpreadsheetMeta, getSheetValues, appendSheetRow } from "@/lib/google/sheets";
-export type { SheetTab, SpreadsheetMeta } from "@/lib/google/sheets";
 
 // Formatting & parsing helpers
-export { parseChf, formatChf } from "@/lib/chf";
+export { formatChf, parseChf } from "@/lib/chf";
+export type { SheetTab, SpreadsheetMeta } from "@/lib/google/sheets";
+export { appendSheetRow, getSheetValues, getSpreadsheetMeta } from "@/lib/google/sheets";
 export { toSlug } from "@/lib/utils";
-
+export type { Contact } from "@/services/contacts";
+export {
+  COMMERCE_TYPES,
+  filterPersons,
+  PERSON_TYPES,
+  parseContacts,
+  SOURCE_TYPES,
+  TYPE_LABELS,
+} from "@/services/contacts";
+export type { SummaryEvent, SummaryIndicators, SummaryTotals } from "@/services/summary";
 // Domain services
 export { parseSummary } from "@/services/summary";
-export type { SummaryEvent, SummaryIndicators, SummaryTotals } from "@/services/summary";
-
-export { parseTransactions, addTransaction } from "@/services/transactions";
-export type { Transaction, NewTransaction, TransactionType } from "@/services/transactions";
-
-export { parseContacts, filterPersons, COMMERCE_TYPES, PERSON_TYPES, SOURCE_TYPES, TYPE_LABELS } from "@/services/contacts";
-export type { Contact } from "@/services/contacts";
+export type { NewTransaction, Transaction, TransactionType } from "@/services/transactions";
+export { addTransaction, parseTransactions } from "@/services/transactions";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

@@ -1,8 +1,8 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { getSession } from "@/services/auth";
 import { getSpreadsheetMeta } from "@/lib/google/sheets";
 import { toSlug } from "@/lib/utils";
+import { getSession } from "@/services/auth";
 import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/sheets";
 import { getSelectedYear } from "@/services/year";
 
@@ -44,9 +44,7 @@ export default async function EventsPage() {
           </Link>
         ))}
         {eventSheets.length === 0 && (
-          <p className="px-5 py-12 font-mono text-sm text-muted-foreground text-center">
-            Aucun événement.
-          </p>
+          <p className="px-5 py-12 font-mono text-sm text-muted-foreground text-center">Aucun événement.</p>
         )}
       </div>
     </div>

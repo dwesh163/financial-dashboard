@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2, Plus, UserRound } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -45,15 +45,18 @@ export function AddPersonDialog() {
 
   return (
     <>
-      <Button
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-2 font-mono text-xs"
-      >
+      <Button onClick={() => setOpen(true)} className="flex items-center gap-2 font-mono text-xs">
         <Plus className="w-3.5 h-3.5" />
         Ajouter
       </Button>
 
-      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) reset();
+        }}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -75,17 +78,30 @@ export function AddPersonDialog() {
             </div>
 
             {error && (
-              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">
-                {error}
-              </p>
+              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>
             )}
 
             <div className="flex justify-end gap-2 pt-2 border-t border-border">
-              <Button type="button" variant="ghost" onClick={() => { setOpen(false); reset(); }} disabled={loading}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setOpen(false);
+                  reset();
+                }}
+                disabled={loading}
+              >
                 Annuler
               </Button>
               <Button type="submit" disabled={loading || !name.trim()} className="min-w-[100px]">
-                {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Plus className="w-3.5 h-3.5" />Ajouter</>}
+                {loading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <>
+                    <Plus className="w-3.5 h-3.5" />
+                    Ajouter
+                  </>
+                )}
               </Button>
             </div>
           </form>

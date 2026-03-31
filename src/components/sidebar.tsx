@@ -1,21 +1,13 @@
 "use client";
 
-import {
-  Building2,
-  CalendarDays,
-  ChevronDown,
-  ChevronRight,
-  LayoutDashboard,
-  LogOut,
-  Users,
-} from "lucide-react";
+import { Building2, CalendarDays, ChevronDown, ChevronRight, LayoutDashboard, LogOut, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { YearSelector } from "@/components/year-selector";
-import { toSlug } from "@/lib/utils";
 import type { SheetTab } from "@/lib/google/sheets";
+import { toSlug } from "@/lib/utils";
 
 const SPECIAL_SHEETS = ["Summary", "Contacts"];
 
@@ -46,9 +38,7 @@ export function Sidebar({ sheets, userName, years, selectedYear }: Props) {
       {/* Nav */}
       <nav className="flex-1 py-4 flex flex-col gap-0.5 overflow-y-auto">
         {/* ── Général ── */}
-        <p className="px-5 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">
-          Général
-        </p>
+        <p className="px-5 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">Général</p>
 
         <Link
           href="/"
@@ -90,9 +80,7 @@ export function Sidebar({ sheets, userName, years, selectedYear }: Props) {
                   key={sheet.sheetId}
                   href={`/events/${slug}`}
                   className={`flex items-center gap-2.5 pl-9 pr-4 py-1.5 text-xs transition-colors ${
-                    active
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                    active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <span className={`w-3 h-px flex-shrink-0 ${active ? "bg-primary" : "bg-muted-foreground/25"}`} />
@@ -105,9 +93,7 @@ export function Sidebar({ sheets, userName, years, selectedYear }: Props) {
 
         {/* ── Contacts ── */}
         <div className="mt-3">
-          <p className="px-5 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">
-            Contacts
-          </p>
+          <p className="px-5 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">Contacts</p>
 
           <Link
             href="/contacts?type=commerce"

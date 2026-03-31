@@ -9,17 +9,8 @@ import { getSelectedYear } from "@/services/year";
 
 function Diff({ value }: { value: number }) {
   if (value === 0) return <span className="font-mono text-muted-foreground/40">—</span>;
-  if (value > 0)
-    return (
-      <span className="font-mono font-bold tabular-nums text-primary">
-        +{formatChf(value)}
-      </span>
-    );
-  return (
-    <span className="font-mono font-bold tabular-nums text-destructive">
-      {formatChf(value)}
-    </span>
-  );
+  if (value > 0) return <span className="font-mono font-bold tabular-nums text-primary">+{formatChf(value)}</span>;
+  return <span className="font-mono font-bold tabular-nums text-destructive">{formatChf(value)}</span>;
 }
 
 export default async function SummaryPage() {
@@ -39,9 +30,7 @@ export default async function SummaryPage() {
           <p className="font-mono text-4xl font-bold tabular-nums text-foreground leading-none">
             {formatChf(indicators.etatReel)}
           </p>
-          <p className="font-mono text-[11px] text-muted-foreground">
-            Vérif.&nbsp;{indicators.lastCheck || "—"}
-          </p>
+          <p className="font-mono text-[11px] text-muted-foreground">Vérif.&nbsp;{indicators.lastCheck || "—"}</p>
         </div>
 
         {/* KPI row */}
@@ -55,11 +44,7 @@ export default async function SummaryPage() {
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">{label}</p>
               <p
                 className={`font-mono text-sm font-bold tabular-nums leading-none ${
-                  colored && value > 0
-                    ? "text-primary"
-                    : colored && value < 0
-                      ? "text-destructive"
-                      : "text-foreground"
+                  colored && value > 0 ? "text-primary" : colored && value < 0 ? "text-destructive" : "text-foreground"
                 }`}
               >
                 {formatChf(value)}
@@ -109,9 +94,7 @@ export default async function SummaryPage() {
         <div className="flex items-end justify-between pb-5 border-b border-border">
           <div>
             <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Aperçu annuel</p>
-            <p className="font-mono text-6xl font-bold text-foreground leading-none tabular-nums">
-              {selectedYear}
-            </p>
+            <p className="font-mono text-6xl font-bold text-foreground leading-none tabular-nums">{selectedYear}</p>
           </div>
           <div className="text-right pb-1">
             <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1.5">Dernière vérification</p>
@@ -136,11 +119,7 @@ export default async function SummaryPage() {
               <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-3">{label}</p>
               <p
                 className={`font-mono text-2xl font-bold tabular-nums leading-none ${
-                  colored && value > 0
-                    ? "text-primary"
-                    : colored && value < 0
-                      ? "text-destructive"
-                      : "text-foreground"
+                  colored && value > 0 ? "text-primary" : colored && value < 0 ? "text-destructive" : "text-foreground"
                 }`}
               >
                 {formatChf(value)}
@@ -178,17 +157,13 @@ export default async function SummaryPage() {
                 key={event.slug}
                 href={`/events/${event.slug}`}
                 className={`grid grid-cols-[1fr_120px_120px_120px_120px_110px] gap-2 items-center px-5 py-3.5 border-b border-border last:border-0 transition-colors group ${
-                  hasData
-                    ? "hover:bg-white/[0.04]"
-                    : "opacity-25 cursor-default pointer-events-none"
+                  hasData ? "hover:bg-white/[0.04]" : "opacity-25 cursor-default pointer-events-none"
                 }`}
               >
                 <p className="text-sm text-foreground group-hover:text-primary transition-colors truncate">
                   {event.title}
                   {event.subtitle && (
-                    <span className="ml-2 font-mono text-muted-foreground font-normal text-xs">
-                      {event.subtitle}
-                    </span>
+                    <span className="ml-2 font-mono text-muted-foreground font-normal text-xs">{event.subtitle}</span>
                   )}
                 </p>
                 <div className="font-mono text-sm text-right text-muted-foreground tabular-nums">
