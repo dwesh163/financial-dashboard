@@ -86,7 +86,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
     <div className="space-y-6">
       {/* Header */}
       <div className="pb-5 border-b border-border">
-        <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground mb-4">
+        <div className="hidden md:flex items-center gap-2 font-mono text-xs text-muted-foreground mb-4">
           <Link href="/" className="hover:text-foreground transition-colors hidden md:inline">
             Comptes
           </Link>
