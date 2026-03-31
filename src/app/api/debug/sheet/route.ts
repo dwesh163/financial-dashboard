@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/services/auth";
-import { findSpreadsheet, getSheetValues, getSpreadsheetMeta } from "@/services/sheets";
+import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
+import { searchFiles } from "@/lib/google/drive";
 
 const SHEET_NAME = "Comptes - 2026";
 
@@ -10,18 +11,22 @@ export async function GET() {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const file = await findSpreadsheet(session.accessToken, SHEET_NAME);
+  const files = await searchFiles(
+    session.accessToken,
+    `name = '${SHEET_NAME}' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false`,
+    1,
+  );
+  const file = files[0];
   if (!file) {
     return NextResponse.json({ error: `Sheet "${SHEET_NAME}" not found` }, { status: 404 });
   }
 
   const meta = await getSpreadsheetMeta(session.accessToken, file.id);
 
-  // Sample first 10 rows from each sheet tab to understand the format
   const samples: Record<string, string[][]> = {};
   for (const sheet of meta.sheets) {
     try {
-      const values = await getSheetValues(session.accessToken, file.id, sheet.title);
+      const values = await getSheetValues(session.accessToken, file.id, sheetRange(sheet.title));
       samples[sheet.title] = values.slice(0, 15);
     } catch (e) {
       samples[sheet.title] = [[`ERROR: ${e instanceof Error ? e.message : String(e)}`]];

@@ -1,46 +1,76 @@
-import { ArrowDownLeft, ArrowUpRight, ExternalLink } from "lucide-react";
+import { ExternalLink, FileText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AddTransactionDialog } from "@/components/add-transaction-dialog";
+import { TransactionActions } from "@/components/transaction-actions";
 import { getSession } from "@/services/auth";
-import {
-  formatChf,
-  getSheetValues,
-  getSpreadsheetMeta,
-  parseTransactions,
-  SPECIAL_SHEETS,
-  SPREADSHEET_ID,
-  type Transaction,
-  toSlug,
-} from "@/services/sheets";
+import { filterPersons, parseContacts } from "@/services/contacts";
+import { formatChf } from "@/lib/chf";
+import { toSlug } from "@/lib/utils";
+import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
+import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/sheets";
+import { parseTransactions, type Transaction } from "@/services/transactions";
+import { getSelectedYear } from "@/services/year";
+
+function isDriveUrl(v: string) {
+  try { new URL(v); return true; } catch { return false; }
+}
+
+function ProofDisplay({ proof }: { proof: string }) {
+  if (!proof) return <span className="font-mono text-xs text-muted-foreground/30">—</span>;
+  if (isDriveUrl(proof)) {
+    return (
+      <a
+        href={proof}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
+      >
+        <FileText className="w-3 h-3 flex-shrink-0" />
+        Voir
+      </a>
+    );
+  }
+  return <span className="font-mono text-xs text-muted-foreground">{proof}</span>;
+}
 
 function AmountBadge({ tx }: { tx: Transaction }) {
   if (tx.in !== null && tx.in > 0) {
     return (
-      <span className="inline-flex items-center gap-0.5 text-primary font-semibold tabular-nums">
-        <ArrowUpRight className="w-3.5 h-3.5" />+{formatChf(tx.in)}
+      <span className="font-mono font-bold tabular-nums text-primary">
+        +{formatChf(tx.in)}
       </span>
     );
   }
   if (tx.out !== null && tx.out > 0) {
     return (
-      <span className="inline-flex items-center gap-0.5 text-destructive font-semibold tabular-nums">
-        <ArrowDownLeft className="w-3.5 h-3.5" />-{formatChf(tx.out)}
+      <span className="font-mono font-bold tabular-nums text-destructive">
+        −{formatChf(tx.out)}
       </span>
     );
   }
-  return <span className="text-muted-foreground/30">—</span>;
+  return <span className="font-mono text-muted-foreground/30">—</span>;
 }
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const session = await getSession();
+  const selectedYear = await getSelectedYear();
+  const spreadsheetId = await getSpreadsheetId(session.accessToken!, selectedYear);
 
-  const meta = await getSpreadsheetMeta(session.accessToken!, SPREADSHEET_ID);
+  const [meta, contactRows] = await Promise.all([
+    getSpreadsheetMeta(session.accessToken!, spreadsheetId),
+    getSheetValues(session.accessToken!, spreadsheetId, sheetRange("Contacts", "A:B")).catch(() => []),
+  ]);
+
   const sheet = meta.sheets.find((s) => toSlug(s.title) === slug && !SPECIAL_SHEETS.includes(s.title));
   if (!sheet) notFound();
 
-  const rows = await getSheetValues(session.accessToken!, SPREADSHEET_ID, sheet.title);
+  const rows = await getSheetValues(session.accessToken!, spreadsheetId, sheetRange(sheet.title, "A:H"));
+
   const transactions = parseTransactions(rows);
+  const contacts = parseContacts(contactRows);
+  const persons = filterPersons(contacts);
 
   const totalIn = transactions.reduce((s, t) => s + (t.in ?? 0), 0);
   const totalOut = transactions.reduce((s, t) => s + (t.out ?? 0), 0);
@@ -52,128 +82,155 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
     { label: "Résultat", value: delta, color: "auto" as const },
   ];
 
+  // Common props for TransactionActions
+  const actionProps = { spreadsheetId, sheetTitle: sheet.title, sheetId: sheet.sheetId, persons };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 pt-1">
-        <div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
-            <Link href="/" className="hover:text-foreground transition-colors hidden md:inline">
-              Comptes
-            </Link>
-            <span className="hidden md:inline">/</span>
-            <Link href="/events" className="hover:text-foreground transition-colors">
-              Événements
-            </Link>
-            <span>/</span>
-            <span className="truncate max-w-[120px] md:max-w-none">{sheet.title}</span>
-          </div>
-          <h1 className="text-lg md:text-sm font-bold md:font-semibold text-foreground">{sheet.title}</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
-          </p>
+      <div className="pb-5 border-b border-border">
+        <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground mb-4">
+          <Link href="/" className="hover:text-foreground transition-colors hidden md:inline">
+            Comptes
+          </Link>
+          <span className="hidden md:inline opacity-40">·</span>
+          <Link href="/events" className="hover:text-foreground transition-colors">
+            Événements
+          </Link>
+          <span className="opacity-40">·</span>
+          <span className="text-foreground truncate max-w-[160px] md:max-w-none">{sheet.title}</span>
         </div>
-        <a
-          href={`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit#gid=${sheet.sheetId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-shrink-0 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg px-2.5 py-1.5"
-        >
-          <ExternalLink className="w-3 h-3" />
-          <span>Sheets</span>
-        </a>
+
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Événement</p>
+            <h1 className="font-mono text-3xl md:text-4xl font-bold text-foreground leading-none">{sheet.title}</h1>
+            <p className="font-mono text-xs text-muted-foreground mt-2">
+              {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <AddTransactionDialog spreadsheetId={spreadsheetId} sheetTitle={sheet.title} persons={persons} />
+            <a
+              href={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheet.sheetId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-border px-3 py-2 hover:border-foreground/30"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Sheets
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-3 gap-px bg-border rounded-xl overflow-hidden border border-border">
-        {kpis.map(({ label, value, color }) => {
-          const cls =
-            color === "positive"
-              ? "text-primary"
-              : color === "negative"
-                ? "text-destructive"
-                : value > 0
-                  ? "text-primary"
-                  : value < 0
-                    ? "text-destructive"
-                    : "text-foreground";
-          return (
-            <div key={label} className="bg-card px-3 md:px-4 py-3">
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1.5">{label}</p>
-              <p className={`text-sm md:text-base font-bold tabular-nums leading-none ${cls}`}>
-                {value === 0 ? "—" : formatChf(value)}
-              </p>
-            </div>
-          );
-        })}
+      <div className="border border-border">
+        <div className="md:hidden divide-y divide-border">
+          {kpis.map(({ label, value, color }) => {
+            const cls =
+              color === "positive" ? "text-primary"
+              : color === "negative" ? "text-destructive"
+              : value > 0 ? "text-primary"
+              : value < 0 ? "text-destructive"
+              : "text-foreground";
+            return (
+              <div key={label} className="flex items-center justify-between px-4 py-3.5 bg-card">
+                <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
+                <p className={`font-mono text-base font-bold tabular-nums ${cls}`}>
+                  {value === 0 ? "—" : formatChf(value)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="hidden md:grid md:grid-cols-3 gap-px bg-border">
+          {kpis.map(({ label, value, color }) => {
+            const cls =
+              color === "positive" ? "text-primary"
+              : color === "negative" ? "text-destructive"
+              : value > 0 ? "text-primary"
+              : value < 0 ? "text-destructive"
+              : "text-foreground";
+            return (
+              <div key={label} className="bg-card px-5 py-5">
+                <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-3">{label}</p>
+                <p className={`font-mono text-2xl font-bold tabular-nums leading-none ${cls}`}>
+                  {value === 0 ? "—" : formatChf(value)}
+                </p>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Transactions */}
       {transactions.length === 0 ? (
-        <div className="text-center py-16 text-sm text-muted-foreground border border-border rounded-xl">
+        <div className="border border-border py-16 font-mono text-sm text-muted-foreground text-center">
           Aucune transaction.
         </div>
       ) : (
         <>
-          {/* Mobile: transaction cards */}
-          <div className="md:hidden rounded-xl border border-border overflow-hidden bg-card">
-            {transactions.map((tx, i) => (
-              <div
-                key={`${tx.date}-${i}`}
-                className="flex items-center gap-3 px-4 py-3.5 border-b border-border last:border-0"
-              >
-                {/* Left: colored indicator */}
-                <div
-                  className={`w-1 self-stretch rounded-full flex-shrink-0 ${
-                    tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border"
-                  }`}
-                />
-                {/* Center: info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{tx.description || "—"}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    <span className="font-mono">{tx.date}</span>
-                    {tx.source ? <span> · {tx.source}</span> : null}
-                    {tx.destination ? <span className="text-muted-foreground/60"> → {tx.destination}</span> : null}
-                  </p>
-                </div>
-                {/* Right: amount */}
-                <div className="flex-shrink-0 text-right">
-                  <AmountBadge tx={tx} />
-                  {tx.proof && <p className="text-[10px] text-muted-foreground mt-0.5">{tx.proof}</p>}
+          {/* Mobile cards */}
+          <div className="md:hidden border border-border">
+            {transactions.map((tx) => (
+              <div key={tx.rowIndex} className="flex items-stretch border-b border-border last:border-0">
+                <div className={`w-0.5 flex-shrink-0 ${tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border"}`} />
+                <div className="flex items-center gap-3 flex-1 px-4 py-3.5 min-w-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-foreground truncate">{tx.description || "—"}</p>
+                    <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
+                      <span>{tx.date}</span>
+                      {tx.source ? <span> · {tx.source}</span> : null}
+                      {tx.destination ? <span className="opacity-60"> → {tx.destination}</span> : null}
+                    </p>
+                    {tx.person && (
+                      <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    <AmountBadge tx={tx} />
+                    {tx.proof && <p className="mt-0.5"><ProofDisplay proof={tx.proof} /></p>}
+                    <TransactionActions transaction={tx} {...actionProps} />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Desktop: full table */}
-          <div className="hidden md:block rounded-lg border border-border overflow-hidden">
-            <div className="grid grid-cols-[90px_1fr_1fr_1fr_130px_48px] gap-3 px-4 py-2 bg-muted/40 border-b border-border">
-              {["Date", "Description", "Source", "Destination"].map((col) => (
-                <span key={col} className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground">
+          {/* Desktop table — grid: date desc src dest person amount proof actions */}
+          <div className="hidden md:block border border-border">
+            <div className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
+              {["Date", "Description", "Source", "Destination", "Personne"].map((col) => (
+                <span key={col} className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">
                   {col}
                 </span>
               ))}
-              <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground text-right">
+              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-right">
                 Montant
               </span>
-              <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground text-center">
+              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-center">
                 Pièce
               </span>
+              <span />
             </div>
-            {transactions.map((tx, i) => (
+            {transactions.map((tx) => (
               <div
-                key={`${tx.date}-${i}`}
-                className="grid grid-cols-[90px_1fr_1fr_1fr_130px_48px] gap-3 items-center px-4 py-2 border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                key={tx.rowIndex}
+                className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/[0.04] transition-colors group"
               >
-                <span className="text-xs text-muted-foreground font-mono tabular-nums">{tx.date}</span>
-                <span className="text-xs text-foreground truncate">{tx.description || "—"}</span>
-                <span className="text-xs text-muted-foreground truncate">{tx.source}</span>
-                <span className="text-xs text-muted-foreground truncate">{tx.destination}</span>
-                <div className="text-xs text-right">
+                <span className="font-mono text-sm text-muted-foreground tabular-nums">{tx.date}</span>
+                <span className="text-sm text-foreground truncate">{tx.description || "—"}</span>
+                <span className="text-sm text-muted-foreground truncate">{tx.source || "—"}</span>
+                <span className="text-sm text-muted-foreground truncate">{tx.destination || "—"}</span>
+                <span className="text-sm text-muted-foreground truncate">{tx.person || "—"}</span>
+                <div className="text-sm text-right">
                   <AmountBadge tx={tx} />
                 </div>
-                <span className="text-xs text-muted-foreground text-center">{tx.proof || "—"}</span>
+                <div className="text-center"><ProofDisplay proof={tx.proof} /></div>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <TransactionActions transaction={tx} {...actionProps} />
+                </div>
               </div>
             ))}
           </div>

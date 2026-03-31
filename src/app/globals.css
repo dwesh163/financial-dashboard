@@ -48,76 +48,42 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Thème Terminal Phosphore (unique) ────────────────────── */
 :root {
-  --background: oklch(0.98 0 0);
-  --foreground: oklch(0.14 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.14 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.14 0 0);
-  --primary: oklch(0.5 0.16 145);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.93 0 0);
-  --secondary-foreground: oklch(0.14 0 0);
-  --muted: oklch(0.93 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.93 0 0);
-  --accent-foreground: oklch(0.14 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.88 0 0);
-  --input: oklch(0.88 0 0);
-  --ring: oklch(0.5 0.16 145);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.95 0 0);
-  --sidebar-foreground: oklch(0.14 0 0);
-  --sidebar-primary: oklch(0.5 0.16 145);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.93 0 0);
-  --sidebar-accent-foreground: oklch(0.14 0 0);
-  --sidebar-border: oklch(0.88 0 0);
-  --sidebar-ring: oklch(0.5 0.16 145);
-}
-
-.dark {
-  /* Zinc warm — fond légèrement chaud, pas vert, pas froid */
-  --background: oklch(0.12 0.006 60);
+  --background: oklch(0.19 0 0);
   --foreground: oklch(0.94 0 0);
-  --card: oklch(0.165 0.007 60);
+  --card: oklch(0.23 0 0);
   --card-foreground: oklch(0.94 0 0);
-  --popover: oklch(0.165 0.007 60);
+  --popover: oklch(0.23 0 0);
   --popover-foreground: oklch(0.94 0 0);
-  --secondary: oklch(0.215 0.006 60);
+  --primary: oklch(0.78 0.22 145);
+  --primary-foreground: oklch(0.12 0 0);
+  --secondary: oklch(0.27 0 0);
   --secondary-foreground: oklch(0.94 0 0);
-  --muted: oklch(0.215 0.006 60);
-  --muted-foreground: oklch(0.58 0.01 60);
-  --accent: oklch(0.215 0.006 60);
-  --accent-foreground: oklch(0.94 0 0);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 11%);
+  --muted: oklch(0.27 0 0);
+  --muted-foreground: oklch(0.66 0 0);
+  --accent: oklch(0.82 0.17 85);
+  --accent-foreground: oklch(0.12 0 0);
+  --border: oklch(0.32 0 0);
+  --input: oklch(0.32 0 0);
+  --destructive: oklch(0.62 0.22 22);
+  --ring: oklch(0.78 0.22 145);
+  --radius: 0rem;
 
-  /* Accent vert — utilisé uniquement sur les éléments UI actifs + montants positifs */
-  --primary: oklch(0.66 0.19 145);
-  --primary-foreground: oklch(0.09 0.025 145);
-  --ring: oklch(0.66 0.19 145);
-
-  --destructive: oklch(0.64 0.2 22);
-
-  --chart-1: oklch(0.66 0.19 145);
-  --chart-2: oklch(0.72 0.14 160);
-  --chart-3: oklch(0.52 0.13 145);
-  --chart-4: oklch(0.43 0.1 145);
-  --chart-5: oklch(0.34 0.07 145);
-
-  --sidebar: oklch(0.155 0.007 60);
+  --sidebar: oklch(0.15 0 0);
   --sidebar-foreground: oklch(0.94 0 0);
-  --sidebar-primary: oklch(0.66 0.19 145);
-  --sidebar-primary-foreground: oklch(0.09 0.025 145);
-  --sidebar-accent: oklch(0.215 0.006 60);
+  --sidebar-primary: oklch(0.78 0.22 145);
+  --sidebar-primary-foreground: oklch(0.12 0 0);
+  --sidebar-accent: oklch(0.24 0 0);
   --sidebar-accent-foreground: oklch(0.94 0 0);
-  --sidebar-border: oklch(1 0 0 / 9%);
-  --sidebar-ring: oklch(0.66 0.19 145);
+  --sidebar-border: oklch(0.29 0 0);
+  --sidebar-ring: oklch(0.78 0.22 145);
 
-  --radius: 0.5rem;
+  --chart-1: oklch(0.78 0.22 145);
+  --chart-2: oklch(0.65 0.18 190);
+  --chart-3: oklch(0.60 0.15 230);
+  --chart-4: oklch(0.55 0.12 145);
+  --chart-5: oklch(0.82 0.17 85);
 }
 
 @layer base {
@@ -129,5 +95,21 @@
   }
   html {
     @apply font-sans;
+  }
+
+  /* Scanline overlay — terminal texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgb(0 0 0 / 0.045) 3px,
+      rgb(0 0 0 / 0.045) 4px
+    );
+    pointer-events: none;
+    z-index: 9998;
   }
 }

@@ -14,30 +14,25 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div
-      className="fixed left-3 right-3 z-50 md:hidden"
-      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
-    >
-      <nav className="bg-card/90 backdrop-blur-xl border border-border rounded-2xl shadow-2xl shadow-black/30 overflow-hidden">
-        <div className="flex items-stretch px-2 py-1.5 gap-1">
-          {tabs.map(({ href, label, icon: Icon }) => {
-            const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`relative flex-1 flex flex-col items-center justify-center py-2 gap-1 rounded-xl transition-all ${
-                  active ? "text-primary-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {active && <span className="absolute inset-0 bg-primary rounded-xl" />}
-                <Icon className="w-[18px] h-[18px] relative z-10" strokeWidth={active ? 2.5 : 1.8} />
-                <span className="text-[10px] font-semibold relative z-10 tracking-wide">{label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden border-t border-border bg-card/95 backdrop-blur-md">
+      <div className="flex items-stretch">
+        {tabs.map(({ href, label, icon: Icon }) => {
+          const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex-1 flex flex-col items-center justify-center py-3 gap-1 transition-colors ${
+                active ? "text-primary" : "text-muted-foreground"
+              }`}
+              style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}
+            >
+              <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 1.8} />
+              <span className="text-[9px] uppercase tracking-[0.15em] font-semibold">{label}</span>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
