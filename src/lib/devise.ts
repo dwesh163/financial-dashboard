@@ -1,4 +1,4 @@
-export function parseChf(s: string | undefined): number {
+export function parseDevise(s: string | undefined): number {
   if (!s?.trim()) return 0;
   const clean = s
     .replace(/Fr\.\s*/gi, "")
@@ -10,7 +10,7 @@ export function parseChf(s: string | undefined): number {
   return Number.isNaN(n) ? 0 : negative ? -n : n;
 }
 
-export function formatChf(n: number): string {
+export function formatDevise(n: number): string {
   return new Intl.NumberFormat("fr-CH", {
     style: "currency",
     currency: "CHF",
