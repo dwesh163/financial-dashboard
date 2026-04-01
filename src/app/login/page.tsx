@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    await signIn("google");
+    await signIn("google", { callbackUrl: "/" });
   };
 
   return (
