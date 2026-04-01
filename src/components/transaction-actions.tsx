@@ -1,132 +1,98 @@
 "use client";
 
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Fragment } from "react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { deleteTransaction, updateTransaction } from "@/app/actions";
 import { PersonSelect } from "@/components/person-select";
 import { ProofField } from "@/components/proof-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BANK_ACCOUNT, TRANSACTION_TYPE_OPTIONS as TYPE_OPTIONS } from "@/constants/transactions";
 import { cn } from "@/lib/utils";
-import type { Contact } from "@/services/contacts";
-import type { Transaction, TransactionType } from "@/services/transactions";
+import type { TransactionActionsProps } from "@/types/props";
+import type { TransactionType } from "@/types/transaction";
 
-interface Props {
-  transaction: Transaction;
-  spreadsheetId: string;
-  sheetTitle: string;
-  sheetId: number;
-  persons: Contact[];
-}
-
-const TYPE_OPTIONS = [
-  { value: "in" as const, label: "Entrée", icon: ArrowDownLeft, color: "text-primary", bg: "bg-primary/10" },
-  { value: "out" as const, label: "Sortie", icon: ArrowUpRight, color: "text-destructive", bg: "bg-destructive/10" },
-  {
-    value: "transfer" as const,
-    label: "Transfert",
-    icon: ArrowLeftRight,
-    color: "text-foreground",
-    bg: "bg-foreground/10",
-  },
-] as const;
-
-function toIsoDate(display: string): string {
+const toIsoDate = (display: string): string => {
   const [d, m, y] = display.split(".");
   return `${y}-${m}-${d}`;
-}
+};
 
-function toDisplayDate(iso: string): string {
+const toDisplayDate = (iso: string): string => {
   const [y, m, d] = iso.split("-");
   return `${d}.${m}.${y}`;
-}
+};
 
-function detectType(tx: Transaction): TransactionType {
-  if (tx.in && tx.in > 0 && tx.out && tx.out > 0) return "transfer";
+const detectType = ({ tx }: { tx: { in: number | null; out: number | null } }): TransactionType => {
   if (tx.in && tx.in > 0) return "in";
   return "out";
-}
+};
 
-export function TransactionActions({ transaction, spreadsheetId, sheetTitle, sheetId, persons }: Props) {
+export const TransactionActions = ({ transaction, sheetTitle, persons, merchants }: TransactionActionsProps) => {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Edit form state — initialised from the transaction
-  const initialType = detectType(transaction);
+  const initialType = detectType({ tx: transaction });
   const [type, setType] = useState<TransactionType>(initialType);
   const [date, setDate] = useState(toIsoDate(transaction.date));
   const [amount, setAmount] = useState(String(transaction.in ?? transaction.out ?? ""));
   const [source, setSource] = useState(transaction.source);
   const [destination, setDestination] = useState(transaction.destination);
   const [person, setPerson] = useState(transaction.person);
+  const [merchant, setMerchant] = useState(transaction.merchant);
   const [description, setDescription] = useState(transaction.description);
   const [proof, setProof] = useState(transaction.proof);
 
-  function resetEdit() {
+  const resetEdit = () => {
     setType(initialType);
     setDate(toIsoDate(transaction.date));
     setAmount(String(transaction.in ?? transaction.out ?? ""));
     setSource(transaction.source);
     setDestination(transaction.destination);
     setPerson(transaction.person);
+    setMerchant(transaction.merchant);
     setDescription(transaction.description);
     setProof(transaction.proof);
     setError(null);
-  }
+  };
 
-  function handlePersonChange(name: string) {
-    setPerson(name);
-    if (name) {
-      if (type === "in") setSource(name);
-      else if (type === "out") setDestination(name);
-    }
-  }
-
-  function handleTypeChange(newType: TransactionType) {
+  const handleTypeChange = (newType: TransactionType) => {
     setType(newType);
-    if (person) {
-      if (newType === "in") {
-        setSource(person);
-        setDestination("");
-      } else if (newType === "out") {
-        setDestination(person);
-        setSource("");
-      }
+    if (newType === "in") {
+      setSource("");
+      setDestination(BANK_ACCOUNT);
+    } else {
+      setSource(BANK_ACCOUNT);
+      setDestination("");
     }
-  }
+  };
 
-  async function handleUpdate(e: React.FormEvent) {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/transactions", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          spreadsheetId,
-          sheetTitle,
-          rowIndex: transaction.rowIndex,
-          transaction: {
-            date: toDisplayDate(date),
-            type,
-            amount: parseFloat(amount),
-            source,
-            destination,
-            person,
-            description,
-            proof,
-          },
-        }),
+      await updateTransaction({
+        sheetTitle,
+        rowIndex: transaction.rowIndex,
+        tx: {
+          date: toDisplayDate(date),
+          type,
+          amount: parseFloat(amount),
+          source,
+          destination,
+          person,
+          merchant,
+          description,
+          proof,
+        },
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Erreur lors de la modification");
-      }
       setEditOpen(false);
       router.refresh();
     } catch (err) {
@@ -134,35 +100,23 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/transactions", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ spreadsheetId, sheetId, rowIndex: transaction.rowIndex }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Erreur lors de la suppression");
-      }
+      await deleteTransaction({ sheetTitle, rowIndex: transaction.rowIndex });
       setDeleteOpen(false);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setLoading(false);
     }
-  }
-
-  const showSource = type === "in" || type === "transfer";
-  const showDestination = type === "out" || type === "transfer";
+  };
 
   return (
-    <>
-      {/* Action buttons */}
+    <Fragment>
       <div className="flex items-center justify-end gap-1">
         <button
           type="button"
@@ -185,7 +139,6 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
         </button>
       </div>
 
-      {/* ── Edit dialog ──────────────────────────────────── */}
       <Dialog
         open={editOpen}
         onOpenChange={(v) => {
@@ -205,10 +158,9 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
           </DialogHeader>
 
           <form onSubmit={handleUpdate} className="space-y-4">
-            {/* Type */}
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Type</p>
-              <div className="grid grid-cols-3 gap-px bg-border border border-border">
+              <div className="grid grid-cols-2 gap-px bg-border border border-border">
                 {TYPE_OPTIONS.map(({ value, label, icon: Icon, color, bg }) => (
                   <button
                     key={value}
@@ -226,7 +178,6 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
               </div>
             </div>
 
-            {/* Date + Montant */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Date</p>
@@ -246,28 +197,55 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
               </div>
             </div>
 
-            {/* Personne */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Source</p>
+                {type === "out" ? (
+                  <div className="h-9 px-3 border border-border flex items-center font-mono text-xs text-muted-foreground bg-muted/30">
+                    {BANK_ACCOUNT}
+                  </div>
+                ) : (
+                  <Input placeholder="Provenance..." value={source} onChange={(e) => setSource(e.target.value)} />
+                )}
+              </div>
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Destination</p>
+                {type === "in" ? (
+                  <div className="h-9 px-3 border border-border flex items-center font-mono text-xs text-muted-foreground bg-muted/30">
+                    {BANK_ACCOUNT}
+                  </div>
+                ) : (
+                  <Input
+                    placeholder="Bénéficiaire..."
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                  />
+                )}
+              </div>
+            </div>
+
             {persons.length > 0 && (
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Personne</p>
-                <PersonSelect persons={persons} value={person} onValueChange={handlePersonChange} />
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Exécutant</p>
+                <PersonSelect persons={persons} value={person} onValueChange={setPerson} />
               </div>
             )}
 
-            {showSource && (
+            {merchants.length > 0 && (
               <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">De (source)</p>
-                <Input placeholder="Source..." value={source} onChange={(e) => setSource(e.target.value)} />
-              </div>
-            )}
-            {showDestination && (
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Vers (destination)</p>
-                <Input
-                  placeholder="Destination..."
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                />
+                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Marchant</p>
+                <Select value={merchant} onValueChange={setMerchant}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un marchant..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {merchants.map((m) => (
+                      <SelectItem key={m.name} value={m.name}>
+                        {m.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
@@ -279,6 +257,7 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
+
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Pièce</p>
               <ProofField value={proof} onChange={setProof} />
@@ -300,7 +279,7 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={loading} className="min-w-[110px]">
+              <Button type="submit" disabled={loading} className="min-w-28">
                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Enregistrer"}
               </Button>
             </div>
@@ -308,7 +287,6 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
         </DialogContent>
       </Dialog>
 
-      {/* ── Delete confirm dialog ─────────────────────────── */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -337,7 +315,7 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
                 variant="destructive"
                 onClick={handleDelete}
                 disabled={loading}
-                className="min-w-[110px]"
+                className="min-w-28"
               >
                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Supprimer"}
               </Button>
@@ -345,6 +323,6 @@ export function TransactionActions({ transaction, spreadsheetId, sheetTitle, she
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </Fragment>
   );
-}
+};

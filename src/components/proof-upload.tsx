@@ -2,47 +2,35 @@
 
 import { CheckCircle2, Loader2, Paperclip } from "lucide-react";
 import { useRef, useState } from "react";
+import { uploadProof } from "@/app/actions";
 import { cn } from "@/lib/utils";
+import type { ProofUploadProps } from "@/types/props";
 
-interface Props {
-  onUploaded: (file: { name: string; webViewLink: string }) => void;
-  className?: string;
-}
-
-export function ProofUpload({ onUploaded, className }: Props) {
+export const ProofUpload = ({ onUploaded, className }: ProofUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploaded, setUploaded] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     setLoading(true);
     setError(null);
     setUploaded(null);
-
     try {
       const form = new FormData();
       form.append("file", file);
-
-      const res = await fetch("/api/drive/upload", { method: "POST", body: form });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Erreur d'upload");
-      }
-
-      const data = await res.json();
-      setUploaded(data.name);
-      onUploaded({ name: data.name, webViewLink: data.webViewLink });
+      const result = await uploadProof(form);
+      setUploaded(result.name);
+      onUploaded(result);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur");
     } finally {
       setLoading(false);
       if (inputRef.current) inputRef.current.value = "";
     }
-  }
+  };
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
@@ -71,4 +59,4 @@ export function ProofUpload({ onUploaded, className }: Props) {
       {error && <p className="font-mono text-[10px] text-destructive">{error}</p>}
     </div>
   );
-}
+};

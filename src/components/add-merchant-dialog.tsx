@@ -1,29 +1,28 @@
 "use client";
 
-import { Fragment } from "react";
-import { Loader2, Plus, UserRound } from "lucide-react";
+import { Building2, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { addPerson } from "@/app/actions";
+import { Fragment, useState } from "react";
+import { addCommercant } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ContactType } from "@/types/contact";
+import { COMMERCE_TYPES } from "@/constants/contacts";
 
-export const AddPersonDialog = () => {
+export const AddMerchantDialog = () => {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
-  const [iban, setIban] = useState("");
-  const [type, setType] = useState<ContactType | "">("");
+  const [type, setType] = useState("");
+  const [address, setAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
     setName("");
-    setIban("");
     setType("");
+    setAddress("");
     setError(null);
   };
 
@@ -32,7 +31,7 @@ export const AddPersonDialog = () => {
     setLoading(true);
     setError(null);
     try {
-      await addPerson({ name, iban: iban.trim() || undefined, type: type || undefined });
+      await addCommercant({ name, type, address: address.trim() || undefined });
       setOpen(false);
       reset();
       router.refresh();
@@ -60,8 +59,8 @@ export const AddPersonDialog = () => {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserRound className="w-4 h-4 text-primary" />
-              Nouvelle personne
+              <Building2 className="w-4 h-4 text-primary" />
+              Nouveau commercant
             </DialogTitle>
           </DialogHeader>
 
@@ -69,7 +68,7 @@ export const AddPersonDialog = () => {
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Nom</p>
               <Input
-                placeholder="Prénom Nom..."
+                placeholder="Nom du commercant..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoFocus
@@ -77,20 +76,23 @@ export const AddPersonDialog = () => {
               />
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">IBAN</p>
-              <Input placeholder="FR76..." value={iban} onChange={(e) => setIban(e.target.value)} />
-            </div>
-            <div>
-              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Scope</p>
-              <Select value={type} onValueChange={(v) => setType(v as ContactType)}>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Type</p>
+              <Select value={type} onValueChange={setType} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Interne / Externe..." />
+                  <SelectValue placeholder="Sélectionner un type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Interne">Interne</SelectItem>
-                  <SelectItem value="Externe">Externe</SelectItem>
+                  {COMMERCE_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Adresse</p>
+              <Input placeholder="123 rue de la Paix..." value={address} onChange={(e) => setAddress(e.target.value)} />
             </div>
 
             {error && (
@@ -109,7 +111,7 @@ export const AddPersonDialog = () => {
               >
                 Annuler
               </Button>
-              <Button type="submit" disabled={loading || !name.trim()} className="min-w-24">
+              <Button type="submit" disabled={loading || !name.trim() || !type} className="min-w-24">
                 {loading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (

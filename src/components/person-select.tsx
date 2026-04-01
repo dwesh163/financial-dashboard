@@ -2,21 +2,12 @@
 
 import { User } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Contact } from "@/services/contacts";
+import type { PersonSelectProps } from "@/types/props";
 
 const NONE = "__none__";
 
-interface Props {
-  persons: Contact[];
-  value: string;
-  onValueChange: (value: string) => void;
-  placeholder?: string;
-}
-
-export function PersonSelect({ persons, value, onValueChange, placeholder = "Sélectionner..." }: Props) {
-  function handleChange(v: string) {
-    onValueChange(v === NONE ? "" : v);
-  }
+export const PersonSelect = ({ persons, value, onValueChange, placeholder = "Sélectionner..." }: PersonSelectProps) => {
+  const handleChange = (v: string) => onValueChange(v === NONE ? "" : v);
 
   return (
     <Select value={value || NONE} onValueChange={handleChange}>
@@ -38,4 +29,4 @@ export function PersonSelect({ persons, value, onValueChange, placeholder = "Sé
       </SelectContent>
     </Select>
   );
-}
+};

@@ -4,37 +4,32 @@ import { FileText, X } from "lucide-react";
 import { useState } from "react";
 import { ProofUpload } from "@/components/proof-upload";
 import { Input } from "@/components/ui/input";
+import type { UploadedFile } from "@/types/google";
+import type { ProofFieldProps } from "@/types/props";
 
-interface Props {
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}
-
-function isDriveUrl(v: string) {
+const isDriveUrl = (v: string) => {
   try {
     new URL(v);
     return true;
   } catch {
     return false;
   }
-}
+};
 
-export function ProofField({ value, onChange, placeholder = "N° de pièce..." }: Props) {
-  // When loading an existing URL (edit mode) we show a generic label
+export const ProofField = ({ value, onChange, placeholder = "N° de pièce..." }: ProofFieldProps) => {
   const [driveLabel, setDriveLabel] = useState<string | null>(() => (isDriveUrl(value) ? "Fichier PDF" : null));
 
-  function handleUploaded({ name, webViewLink }: { name: string; webViewLink: string }) {
+  const handleUploaded = ({ name, webViewLink }: UploadedFile) => {
     setDriveLabel(name);
     onChange(webViewLink);
-  }
+  };
 
-  function handleClear() {
+  const handleClear = () => {
     setDriveLabel(null);
     onChange("");
-  }
+  };
 
-  if (isDriveUrl(value) && driveLabel !== null) {
+  if (isDriveUrl(value) && driveLabel !== null)
     return (
       <div className="flex items-center gap-2 h-9 px-3 border border-primary/30 bg-primary/5 min-w-0">
         <FileText className="w-3.5 h-3.5 text-primary flex-shrink-0" />
@@ -55,7 +50,6 @@ export function ProofField({ value, onChange, placeholder = "N° de pièce..." }
         </button>
       </div>
     );
-  }
 
   return (
     <div className="flex gap-2">
@@ -70,4 +64,4 @@ export function ProofField({ value, onChange, placeholder = "N° de pièce..." }
       <ProofUpload onUploaded={handleUploaded} />
     </div>
   );
-}
+};
