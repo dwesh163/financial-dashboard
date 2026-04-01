@@ -1,32 +1,3 @@
-export type DriveFile = {
-  id: string;
-  name: string;
-  mimeType: string;
-  modifiedTime: string;
-  size?: string;
-  webViewLink?: string;
-};
-
-export async function listFiles(accessToken: string): Promise<DriveFile[]> {
-  const params = new URLSearchParams({
-    fields: "files(id,name,mimeType,modifiedTime,size,webViewLink)",
-    orderBy: "modifiedTime desc",
-    pageSize: "50",
-  });
-
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    next: { revalidate: 60 },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Drive API error: ${res.status}`);
-  }
-
-  const data = await res.json();
-  return data.files ?? [];
-}
-
 export function mimeTypeLabel(mimeType: string): string {
   const map: Record<string, string> = {
     "application/vnd.google-apps.document": "Document",
