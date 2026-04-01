@@ -10,10 +10,11 @@ export const parseSummary = (
   const events: SummaryEvent[] = eventRows
     .filter((row) => row[0]?.trim())
     .map((row) => {
-      const parts = row[0]?.split("\n");
+      const rawTitle = row[0] ?? "";
+      const parts = rawTitle.split("\n");
       return {
-        title: parts[0]?.trim() ?? row[0]!,
-        slug: toSlug(parts[0]?.trim() ?? row[0]!),
+        title: parts[0]?.trim() ?? rawTitle,
+        slug: toSlug(parts[0]?.trim() ?? rawTitle),
         subtitle: parts[1]?.trim() ?? "",
         budgetIn: parseDevise(row[1]),
         budgetOut: parseDevise(row[2]),
