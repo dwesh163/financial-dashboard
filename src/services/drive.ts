@@ -1,19 +1,17 @@
-export function mimeTypeLabel(mimeType: string): string {
-  const map: Record<string, string> = {
-    "application/vnd.google-apps.document": "Document",
-    "application/vnd.google-apps.spreadsheet": "Sheet",
-    "application/vnd.google-apps.presentation": "Slides",
-    "application/vnd.google-apps.folder": "Folder",
-    "application/pdf": "PDF",
-  };
-  if (mimeType.startsWith("image/")) return "Image";
-  return map[mimeType] ?? "File";
-}
+"use server";
 
-export function formatBytes(bytes?: string): string {
-  if (!bytes) return "—";
-  const n = Number(bytes);
-  if (n < 1024) return `${n} B`;
-  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
-  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
-}
+import { getFolder, uploadFile } from "@/lib/drive";
+import { getSelectedYear } from "@/services/auth";
+import type { UploadedFile } from "@/types/google";
+
+export const uploadProof = async (formData: FormData): Promise<UploadedFile> => {
+  const file = formData.get("file") as File | null;
+  if (!file) throw new Error("Aucun fichier fourni");
+  if (file.type !== "application/pdf") throw new Error("Seuls les fichiers PDF sont acceptés");
+  const year = await getSelectedYear();
+  const financesId = await getFolder({ name: "Finances" });
+  const yearId = await getFolder({ name: String(year), parentId: financesId });
+  const folderId = await getFolder({ name: "Preuves", parentId: yearId });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return uploadFile({ folderId, filename: file.name, mimeType: file.type, buffer });
+};

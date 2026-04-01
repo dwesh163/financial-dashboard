@@ -8,8 +8,9 @@ import { formatDevise } from "@/lib/devise";
 import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/sheets";
 import { cn, toSlug } from "@/lib/utils";
 import { getMerchants, getPersons } from "@/services/contacts";
-import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/spreadsheet";
-import { parseTransactions } from "@/services/transactions";
+import { parseTransactions } from "@/lib/transactions";
+import { getSpreadsheetId } from "@/services/spreadsheet";
+import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
 import type { Transaction } from "@/types/transaction";
 
 const isDriveUrl = (v: string) => {
@@ -60,7 +61,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   if (!sheet) notFound();
 
   const rows = spreadsheetId
-    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: sheet.title, columns: "A:I" }) })
+    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: sheet.title, columns: "A:H" }) })
     : [];
 
   const transactions = parseTransactions(rows);
@@ -167,16 +168,13 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 />
                 <div className="flex items-center gap-3 flex-1 px-4 py-3.5 min-w-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate">{tx.description || tx.merchant || "—"}</p>
+                    <p className="text-sm text-foreground truncate">{tx.description || tx.destination || "—"}</p>
                     <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
                       <span>{tx.date}</span>
                       {tx.source ? <span> · {tx.source}</span> : null}
-                      {tx.destination ? <span className="opacity-60"> → {tx.destination}</span> : null}
+                      {tx.destination && tx.description ? <span className="opacity-60"> · {tx.destination}</span> : null}
                     </p>
                     {tx.person && <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>}
-                    {tx.merchant && tx.description && (
-                      <p className="font-mono text-[11px] text-muted-foreground/60 mt-0.5">{tx.merchant}</p>
-                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     <AmountBadge tx={tx} />
@@ -193,37 +191,28 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           </div>
 
           <div className="hidden md:block border border-border">
-            <div className="grid grid-cols-[100px_1fr_1fr_1fr_120px_120px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
-              {["Date", "Description", "Source", "Destination", "Exécutant", "Marchant"].map((col) => (
+            <div className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
+              {["Date", "Description", "Source", "Destination", "Exécutant"].map((col) => (
                 <span key={col} className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">
                   {col}
                 </span>
               ))}
-              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-right">
-                Montant
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-center">
-                Pièce
-              </span>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-right">Montant</span>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-center">Pièce</span>
               <span />
             </div>
             {transactions.map((tx) => (
               <div
                 key={tx.rowIndex}
-                className="grid grid-cols-[100px_1fr_1fr_1fr_120px_120px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/[0.04] transition-colors group"
+                className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/[0.04] transition-colors group"
               >
                 <span className="font-mono text-sm text-muted-foreground tabular-nums">{tx.date}</span>
                 <span className="text-sm text-foreground truncate">{tx.description || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.source || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.destination || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.person || "—"}</span>
-                <span className="text-sm text-muted-foreground truncate">{tx.merchant || "—"}</span>
-                <div className="text-sm text-right">
-                  <AmountBadge tx={tx} />
-                </div>
-                <div className="text-center">
-                  <ProofDisplay proof={tx.proof} />
-                </div>
+                <div className="text-sm text-right"><AmountBadge tx={tx} /></div>
+                <div className="text-center"><ProofDisplay proof={tx.proof} /></div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <TransactionActions transaction={tx} {...actionProps} />
                 </div>

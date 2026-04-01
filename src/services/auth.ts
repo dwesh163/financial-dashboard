@@ -89,3 +89,4 @@ export const getSelectedYear = async (): Promise<number> => {
   const session = await auth();
   return session?.selectedYear ?? new Date().getFullYear();
 };
+

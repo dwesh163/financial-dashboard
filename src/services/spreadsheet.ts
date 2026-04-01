@@ -1,8 +1,10 @@
-import { ACCOUNTS_SPREADSHEET_PREFIX, FINANCES_FOLDER } from "@/constants/drive";
-import { createSpreadsheet, getFolder, searchFiles } from "@/lib/drive";
-import { getSelectedYear } from "@/services/auth";
+"use server";
 
-export { SPECIAL_SHEETS } from "@/constants/spreadsheet";
+import { ACCOUNTS_SPREADSHEET_PREFIX, FINANCES_FOLDER } from "@/constants/drive";
+import { TRANSACTION_HEADERS } from "@/constants/transactions";
+import { createSpreadsheet, getFolder, searchFiles } from "@/lib/drive";
+import { createSheet } from "@/lib/sheets";
+import { getSelectedYear, unstable_update } from "@/services/auth";
 
 export const getSpreadsheetId = async (): Promise<string> => {
   const year = await getSelectedYear();
@@ -29,4 +31,19 @@ export const listYearSpreadsheets = async (): Promise<number[]> => {
     if (match) years.push(Number.parseInt(match[1]!, 10));
   }
   return years.sort((a, b) => b - a);
+};
+
+export const setYear = async (year: number): Promise<void> => {
+  await unstable_update({ selectedYear: year });
+};
+
+export const createYear = async (year: number): Promise<void> => {
+  await createYearSpreadsheet(year);
+  await unstable_update({ selectedYear: year });
+};
+
+export const createEvent = async (name: string): Promise<void> => {
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) throw new Error("Aucun classeur sélectionné");
+  await createSheet({ spreadsheetId, title: name, headers: TRANSACTION_HEADERS });
 };

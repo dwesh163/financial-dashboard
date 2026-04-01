@@ -1,9 +1,11 @@
+"use server";
+
 import { cache } from "react";
 import { MERCHANTS_HEADERS, PERSONS_HEADERS } from "@/constants/contacts";
 import { CONTACTS_SPREADSHEET, FINANCES_FOLDER } from "@/constants/drive";
 import { MERCHANTS_SHEET, PERSONS_SHEET } from "@/constants/spreadsheet";
 import { createSpreadsheet, getFolder, searchFiles } from "@/lib/drive";
-import { appendSheetRow, ensureSheets, getSheetValues, sheetRange } from "@/lib/sheets";
+import { appendSheetRow, ensureSheets, getSheetValues, sheetRange, updateSheetRow } from "@/lib/sheets";
 import type { Contact, ContactType } from "@/types/contact";
 
 const getContactsSpreadsheetId = cache(async (): Promise<string> => {
@@ -49,6 +51,32 @@ export const getMerchants = async (): Promise<Contact[]> => {
     }));
 };
 
+export const getMerchantsWithRows = async (): Promise<{ rowIndex: number; contact: Contact }[]> => {
+  const spreadsheetId = await getContactsSpreadsheetId();
+  const rows = await getSheetValues({ spreadsheetId, range: sheetRange({ title: MERCHANTS_SHEET, columns: "A:C" }) });
+  return rows
+    .slice(1)
+    .map((r, i) => ({ r, rowIndex: i + 2 }))
+    .filter(({ r }) => r[0]?.trim())
+    .map(({ r, rowIndex }) => ({
+      rowIndex,
+      contact: {
+        name: r[0]!.trim(),
+        type: (r[1]?.trim() as ContactType) || "Store",
+        address: r[2]?.trim(),
+      },
+    }));
+};
+
+export const updateMerchantName = async ({ rowIndex, name }: { rowIndex: number; name: string }): Promise<void> => {
+  const spreadsheetId = await getContactsSpreadsheetId();
+  await updateSheetRow({
+    spreadsheetId,
+    range: `'${MERCHANTS_SHEET}'!A${rowIndex}`,
+    values: [name],
+  });
+};
+
 export const addPerson = async ({
   name,
   iban,
@@ -83,4 +111,29 @@ export const addMerchant = async ({
     range: sheetRange({ title: MERCHANTS_SHEET, columns: "A:C" }),
     values: [name, typeLabel, address ?? ""],
   });
+};
+
+export const addCommercant = async ({
+  name,
+  type,
+  address,
+}: {
+  name: string;
+  type: string;
+  address?: string;
+}): Promise<void> => {
+  const existing = await getMerchantsWithRows();
+  const baseName = name.split(" - ")[0] ?? name;
+  const match = existing.find(({ contact: m }) => (m.name.split(" - ")[0] ?? m.name) === baseName);
+  if (match) {
+    const hasNoSuffix = !match.contact.name.includes(" - ");
+    if (hasNoSuffix && match.contact.address) {
+      const city = match.contact.address.split(" ")[1] ?? match.contact.address;
+      await updateMerchantName({ rowIndex: match.rowIndex, name: `${baseName} - ${city}` });
+    }
+    const newCity = address?.split(" ")[1] ?? address ?? "";
+    await addMerchant({ name: `${baseName} - ${newCity}`, type, address });
+  } else {
+    await addMerchant({ name: baseName, type, address });
+  }
 };

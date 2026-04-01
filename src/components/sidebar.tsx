@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Fragment, useState } from "react";
-import { createEvent } from "@/app/actions";
+import { createEvent } from "@/services/spreadsheet";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

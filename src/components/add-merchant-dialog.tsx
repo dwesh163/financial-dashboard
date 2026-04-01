@@ -3,7 +3,7 @@
 import { Building2, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
-import { addCommercant } from "@/app/actions";
+import { addCommercant } from "@/services/contacts";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

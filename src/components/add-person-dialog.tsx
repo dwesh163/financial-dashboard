@@ -3,7 +3,7 @@
 import { Loader2, Plus, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
-import { addPerson } from "@/app/actions";
+import { addPerson } from "@/services/contacts";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

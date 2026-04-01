@@ -3,14 +3,15 @@
 import { FileText, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
-import { createTransaction } from "@/app/actions";
+import { createTransaction } from "@/services/transactions";
+import { CounterpartSelect } from "@/components/counterpart-select";
 import { PersonSelect } from "@/components/person-select";
 import { ProofField } from "@/components/proof-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BANK_ACCOUNT, TRANSACTION_TYPE_OPTIONS as TYPE_OPTIONS } from "@/constants/transactions";
+import { buildMerchantOptions } from "@/lib/merchant-options";
 import { cn } from "@/lib/utils";
 import type { AddTransactionDialogProps } from "@/types/props";
 import type { TransactionType } from "@/types/transaction";
@@ -30,32 +31,27 @@ export const AddTransactionDialog = ({ sheetTitle, persons, merchants }: AddTran
   const [type, setType] = useState<TransactionType>("out");
   const [date, setDate] = useState(todayIso);
   const [amount, setAmount] = useState("");
-  const [source, setSource] = useState(BANK_ACCOUNT);
-  const [destination, setDestination] = useState("");
+  const [counterpart, setCounterpart] = useState("");
   const [person, setPerson] = useState("");
-  const [merchant, setMerchant] = useState("");
   const [description, setDescription] = useState("");
   const [proof, setProof] = useState("");
 
+  // "out": source = Compte bancaire, destination = counterpart
+  // "in":  source = counterpart,     destination = Compte bancaire
+  const source = type === "out" ? BANK_ACCOUNT : counterpart;
+  const destination = type === "out" ? counterpart : BANK_ACCOUNT;
+
   const handleTypeChange = (newType: TransactionType) => {
     setType(newType);
-    if (newType === "in") {
-      setSource("");
-      setDestination(BANK_ACCOUNT);
-    } else {
-      setSource(BANK_ACCOUNT);
-      setDestination("");
-    }
+    setCounterpart("");
   };
 
   const resetForm = () => {
     setType("out");
     setDate(todayIso());
     setAmount("");
-    setSource(BANK_ACCOUNT);
-    setDestination("");
+    setCounterpart("");
     setPerson("");
-    setMerchant("");
     setDescription("");
     setProof("");
     setError(null);
@@ -75,7 +71,6 @@ export const AddTransactionDialog = ({ sheetTitle, persons, merchants }: AddTran
           source,
           destination,
           person,
-          merchant,
           description,
           proof,
         },
@@ -89,6 +84,8 @@ export const AddTransactionDialog = ({ sheetTitle, persons, merchants }: AddTran
       setLoading(false);
     }
   };
+
+  const counterpartOptions = buildMerchantOptions(merchants);
 
   return (
     <Fragment>
@@ -161,7 +158,7 @@ export const AddTransactionDialog = ({ sheetTitle, persons, merchants }: AddTran
                     {BANK_ACCOUNT}
                   </div>
                 ) : (
-                  <Input placeholder="Provenance..." value={source} onChange={(e) => setSource(e.target.value)} />
+                  <CounterpartSelect value={counterpart} onValueChange={setCounterpart} options={counterpartOptions} />
                 )}
               </div>
               <div>
@@ -171,11 +168,7 @@ export const AddTransactionDialog = ({ sheetTitle, persons, merchants }: AddTran
                     {BANK_ACCOUNT}
                   </div>
                 ) : (
-                  <Input
-                    placeholder="Bénéficiaire..."
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                  />
+                  <CounterpartSelect value={counterpart} onValueChange={setCounterpart} options={counterpartOptions} />
                 )}
               </div>
             </div>
@@ -189,24 +182,6 @@ export const AddTransactionDialog = ({ sheetTitle, persons, merchants }: AddTran
                   onValueChange={setPerson}
                   placeholder="Associer une personne..."
                 />
-              </div>
-            )}
-
-            {merchants.length > 0 && (
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Marchant</p>
-                <Select value={merchant} onValueChange={setMerchant}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un marchant..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {merchants.map((m) => (
-                      <SelectItem key={m.name} value={m.name}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             )}
 

@@ -3,7 +3,7 @@
 import { Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState, useTransition } from "react";
-import { createYear, setYear } from "@/app/actions";
+import { createYear, setYear } from "@/services/spreadsheet";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

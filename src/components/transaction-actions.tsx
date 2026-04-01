@@ -1,16 +1,17 @@
 "use client";
 
+import { Fragment, useState } from "react";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Fragment, useState } from "react";
-import { deleteTransaction, updateTransaction } from "@/app/actions";
+import { deleteTransaction, updateTransaction } from "@/services/transactions";
+import { CounterpartSelect } from "@/components/counterpart-select";
 import { PersonSelect } from "@/components/person-select";
 import { ProofField } from "@/components/proof-field";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BANK_ACCOUNT, TRANSACTION_TYPE_OPTIONS as TYPE_OPTIONS } from "@/constants/transactions";
+import { buildMerchantOptions } from "@/lib/merchant-options";
 import { cn } from "@/lib/utils";
 import type { TransactionActionsProps } from "@/types/props";
 import type { TransactionType } from "@/types/transaction";
@@ -25,10 +26,8 @@ const toDisplayDate = (iso: string): string => {
   return `${d}.${m}.${y}`;
 };
 
-const detectType = ({ tx }: { tx: { in: number | null; out: number | null } }): TransactionType => {
-  if (tx.in && tx.in > 0) return "in";
-  return "out";
-};
+const detectType = ({ tx }: { tx: { in: number | null; out: number | null } }): TransactionType =>
+  tx.in && tx.in > 0 ? "in" : "out";
 
 export const TransactionActions = ({ transaction, sheetTitle, persons, merchants }: TransactionActionsProps) => {
   const router = useRouter();
@@ -38,24 +37,26 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
   const [error, setError] = useState<string | null>(null);
 
   const initialType = detectType({ tx: transaction });
+  // counterpart = the non-bank side (source for "in", destination for "out")
+  const initialCounterpart = initialType === "out" ? transaction.destination : transaction.source;
+
   const [type, setType] = useState<TransactionType>(initialType);
   const [date, setDate] = useState(toIsoDate(transaction.date));
   const [amount, setAmount] = useState(String(transaction.in ?? transaction.out ?? ""));
-  const [source, setSource] = useState(transaction.source);
-  const [destination, setDestination] = useState(transaction.destination);
+  const [counterpart, setCounterpart] = useState(initialCounterpart);
   const [person, setPerson] = useState(transaction.person);
-  const [merchant, setMerchant] = useState(transaction.merchant);
   const [description, setDescription] = useState(transaction.description);
   const [proof, setProof] = useState(transaction.proof);
+
+  const source = type === "out" ? BANK_ACCOUNT : counterpart;
+  const destination = type === "out" ? counterpart : BANK_ACCOUNT;
 
   const resetEdit = () => {
     setType(initialType);
     setDate(toIsoDate(transaction.date));
     setAmount(String(transaction.in ?? transaction.out ?? ""));
-    setSource(transaction.source);
-    setDestination(transaction.destination);
+    setCounterpart(initialCounterpart);
     setPerson(transaction.person);
-    setMerchant(transaction.merchant);
     setDescription(transaction.description);
     setProof(transaction.proof);
     setError(null);
@@ -63,13 +64,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
 
   const handleTypeChange = (newType: TransactionType) => {
     setType(newType);
-    if (newType === "in") {
-      setSource("");
-      setDestination(BANK_ACCOUNT);
-    } else {
-      setSource(BANK_ACCOUNT);
-      setDestination("");
-    }
+    setCounterpart("");
   };
 
   const handleUpdate = async (e: React.FormEvent) => {
@@ -80,17 +75,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
       await updateTransaction({
         sheetTitle,
         rowIndex: transaction.rowIndex,
-        tx: {
-          date: toDisplayDate(date),
-          type,
-          amount: parseFloat(amount),
-          source,
-          destination,
-          person,
-          merchant,
-          description,
-          proof,
-        },
+        tx: { date: toDisplayDate(date), type, amount: parseFloat(amount), source, destination, person, description, proof },
       });
       setEditOpen(false);
       router.refresh();
@@ -114,15 +99,14 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
     }
   };
 
+  const counterpartOptions = buildMerchantOptions(merchants);
+
   return (
     <Fragment>
       <div className="flex items-center justify-end gap-1">
         <button
           type="button"
-          onClick={() => {
-            resetEdit();
-            setEditOpen(true);
-          }}
+          onClick={() => { resetEdit(); setEditOpen(true); }}
           className="p-1.5 text-muted-foreground/40 hover:text-foreground transition-colors"
           title="Modifier"
         >
@@ -138,13 +122,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
         </button>
       </div>
 
-      <Dialog
-        open={editOpen}
-        onOpenChange={(v) => {
-          setEditOpen(v);
-          if (!v) resetEdit();
-        }}
-      >
+      <Dialog open={editOpen} onOpenChange={(v) => { setEditOpen(v); if (!v) resetEdit(); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -184,15 +162,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
               </div>
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Montant (CHF)</p>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.01"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                />
+                <Input type="number" step="0.01" min="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} required />
               </div>
             </div>
 
@@ -204,7 +174,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
                     {BANK_ACCOUNT}
                   </div>
                 ) : (
-                  <Input placeholder="Provenance..." value={source} onChange={(e) => setSource(e.target.value)} />
+                  <CounterpartSelect value={counterpart} onValueChange={setCounterpart} options={counterpartOptions} />
                 )}
               </div>
               <div>
@@ -214,11 +184,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
                     {BANK_ACCOUNT}
                   </div>
                 ) : (
-                  <Input
-                    placeholder="Bénéficiaire..."
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value)}
-                  />
+                  <CounterpartSelect value={counterpart} onValueChange={setCounterpart} options={counterpartOptions} />
                 )}
               </div>
             </div>
@@ -230,31 +196,9 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
               </div>
             )}
 
-            {merchants.length > 0 && (
-              <div>
-                <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Marchant</p>
-                <Select value={merchant} onValueChange={setMerchant}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un marchant..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {merchants.map((m) => (
-                      <SelectItem key={m.name} value={m.name}>
-                        {m.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Description</p>
-              <Input
-                placeholder="Description..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
+              <Input placeholder="Description..." value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
 
             <div>
@@ -262,20 +206,10 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
               <ProofField value={proof} onChange={setProof} />
             </div>
 
-            {error && (
-              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>
-            )}
+            {error && <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>}
 
             <div className="flex justify-end gap-2 pt-2 border-t border-border">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setEditOpen(false);
-                  resetEdit();
-                }}
-                disabled={loading}
-              >
+              <Button type="button" variant="ghost" onClick={() => { setEditOpen(false); resetEdit(); }} disabled={loading}>
                 Annuler
               </Button>
               <Button type="submit" disabled={loading} className="min-w-28">
@@ -296,26 +230,18 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
           </DialogHeader>
           <div className="space-y-4">
             <div className="border border-border px-4 py-3 font-mono text-sm space-y-1">
-              <p className="text-foreground">{transaction.description || "—"}</p>
+              <p className="text-foreground">{transaction.description || transaction.destination || "—"}</p>
               <p className="text-muted-foreground text-xs">{transaction.date}</p>
             </div>
             <p className="font-mono text-xs text-muted-foreground">
               Cette action supprime définitivement la ligne {transaction.rowIndex} du sheet.
             </p>
-            {error && (
-              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>
-            )}
+            {error && <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>}
             <div className="flex justify-end gap-2 pt-1 border-t border-border">
               <Button type="button" variant="ghost" onClick={() => setDeleteOpen(false)} disabled={loading}>
                 Annuler
               </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={loading}
-                className="min-w-28"
-              >
+              <Button type="button" variant="destructive" onClick={handleDelete} disabled={loading} className="min-w-28">
                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Supprimer"}
               </Button>
             </div>

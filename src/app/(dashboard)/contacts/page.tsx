@@ -2,6 +2,7 @@ import { UserRound } from "lucide-react";
 import { AddPersonDialog } from "@/components/add-person-dialog";
 import { ContactsTabs } from "@/components/contacts-tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EXTRAS_CONTACTS } from "@/constants/contacts";
 import { getMerchants, getPersons } from "@/services/contacts";
 import type { Contact } from "@/types/contact";
 
@@ -43,7 +44,8 @@ const PersonTable = ({ contacts }: { contacts: Contact[] }) => {
 };
 
 export default async function ContactsPage() {
-  const [persons, merchants] = await Promise.all([getPersons(), getMerchants()]);
+  const [persons, allMerchants] = await Promise.all([getPersons(), getMerchants()]);
+  const merchants = allMerchants.filter((m) => !EXTRAS_CONTACTS.includes(m.name));
 
   return (
     <div className="space-y-8">

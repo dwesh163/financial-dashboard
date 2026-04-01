@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Loader2, Paperclip } from "lucide-react";
 import { useRef, useState } from "react";
-import { uploadProof } from "@/app/actions";
+import { uploadProof } from "@/services/drive";
 import { cn } from "@/lib/utils";
 import type { ProofUploadProps } from "@/types/props";
 

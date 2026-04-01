@@ -15,9 +15,10 @@ const TYPE_ORDER: Record<string, number> = { Provider: 0, Company: 1, Store: 2 }
 const groupMerchants = (merchants: Contact[]): MerchantGroup[] => {
   const map = new Map<string, MerchantGroup>();
   for (const m of merchants) {
-    const existing = map.get(m.name);
+    const base = m.name.split(" - ")[0] ?? m.name;
+    const existing = map.get(base);
     if (existing) existing.branches.push({ address: m.address });
-    else map.set(m.name, { name: m.name, type: m.type, branches: [{ address: m.address }] });
+    else map.set(base, { name: base, type: m.type, branches: [{ address: m.address }] });
   }
   return [...map.values()].sort((a, b) => (TYPE_ORDER[a.type] ?? 99) - (TYPE_ORDER[b.type] ?? 99));
 };

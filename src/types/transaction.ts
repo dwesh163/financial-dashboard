@@ -6,7 +6,6 @@ export type Transaction = {
   source: string;
   destination: string;
   person: string;
-  merchant: string;
   description: string;
   proof: string;
 };
@@ -20,11 +19,7 @@ export type NewTransaction = {
   source: string;
   destination: string;
   person: string;
-  merchant: string;
   description: string;
   proof: string;
 };
 
-export type CreateTransactionParams = { sheetTitle: string; tx: NewTransaction };
-export type UpdateTransactionParams = { sheetTitle: string; rowIndex: number; tx: NewTransaction };
-export type DeleteTransactionParams = { sheetTitle: string; rowIndex: number };
