@@ -1,9 +1,8 @@
 "use client";
 
-import { Fragment } from "react";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { deleteTransaction, updateTransaction } from "@/app/actions";
 import { PersonSelect } from "@/components/person-select";
 import { ProofField } from "@/components/proof-field";

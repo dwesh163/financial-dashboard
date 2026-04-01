@@ -1,6 +1,5 @@
 "use client";
 
-import { Fragment } from "react";
 import {
   Building2,
   CalendarDays,
@@ -15,15 +14,14 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { createEvent } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { YearSelector } from "@/components/year-selector";
 import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
-import { cn } from "@/lib/utils";
-import { toSlug } from "@/lib/utils";
+import { cn, toSlug } from "@/lib/utils";
 import type { SidebarProps } from "@/types/props";
 
 export const Sidebar = ({ sheets, userName, years, selectedYear }: SidebarProps) => {
