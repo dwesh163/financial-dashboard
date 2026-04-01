@@ -1,19 +1,17 @@
 import { MobileNav } from "@/components/mobile-nav";
 import { Sidebar } from "@/components/sidebar";
-import { getSpreadsheetMeta } from "@/lib/google/sheets";
-import { getSession } from "@/services/auth";
-import { getSpreadsheetId, listYearSpreadsheets } from "@/services/sheets";
-import { getSelectedYear } from "@/services/year";
+import { getSpreadsheetMeta } from "@/lib/sheets";
+import { getSelectedYear, getSession } from "@/services/auth";
+import { getSpreadsheetId, listYearSpreadsheets } from "@/services/spreadsheet";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
-  const [selectedYear, years] = await Promise.all([getSelectedYear(), listYearSpreadsheets(session.accessToken!)]);
-  const spreadsheetId = await getSpreadsheetId(session.accessToken!, selectedYear);
-  const meta = await getSpreadsheetMeta(session.accessToken!, spreadsheetId);
+  const [selectedYear, years] = await Promise.all([getSelectedYear(), listYearSpreadsheets()]);
+  const spreadsheetId = await getSpreadsheetId();
+  const meta = spreadsheetId ? await getSpreadsheetMeta({ spreadsheetId }) : { sheets: [] };
 
   return (
     <div className="dark min-h-screen flex bg-background">
-      {/* Sidebar — desktop only */}
       <div className="hidden md:flex">
         <Sidebar
           sheets={meta.sheets}
@@ -22,11 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           selectedYear={selectedYear}
         />
       </div>
-
-      {/* Content */}
-      <main className="flex-1 px-4 pt-16 pb-20 md:px-8 md:py-8 md:pb-8 overflow-auto min-w-0 md:ml-48">{children}</main>
-
-      {/* Bottom nav — mobile only */}
+      <main className="flex-1 px-4 pt-16 pb-20 md:px-8 md:py-8 md:pb-8 overflow-auto min-w-0 md:ml-56">{children}</main>
       <MobileNav />
     </div>
   );

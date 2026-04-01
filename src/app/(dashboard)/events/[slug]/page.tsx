@@ -1,29 +1,29 @@
 import { ExternalLink, FileText } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { AddTransactionDialog } from "@/components/add-transaction-dialog";
 import { TransactionActions } from "@/components/transaction-actions";
-import { formatChf } from "@/lib/chf";
-import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/google/sheets";
-import { toSlug } from "@/lib/utils";
-import { getSession } from "@/services/auth";
-import { filterPersons, parseContacts } from "@/services/contacts";
-import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/sheets";
-import { parseTransactions, type Transaction } from "@/services/transactions";
-import { getSelectedYear } from "@/services/year";
+import { Button } from "@/components/ui/button";
+import { formatDevise } from "@/lib/devise";
+import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/sheets";
+import { cn, toSlug } from "@/lib/utils";
+import { getMerchants, getPersons } from "@/services/contacts";
+import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/spreadsheet";
+import { parseTransactions } from "@/services/transactions";
+import type { Transaction } from "@/types/transaction";
 
-function isDriveUrl(v: string) {
+const isDriveUrl = (v: string) => {
   try {
     new URL(v);
     return true;
   } catch {
     return false;
   }
-}
+};
 
-function ProofDisplay({ proof }: { proof: string }) {
+const ProofDisplay = ({ proof }: { proof: string }) => {
   if (!proof) return <span className="font-mono text-xs text-muted-foreground/30">—</span>;
-  if (isDriveUrl(proof)) {
+  if (isDriveUrl(proof))
     return (
       <a
         href={proof}
@@ -35,39 +35,35 @@ function ProofDisplay({ proof }: { proof: string }) {
         Voir
       </a>
     );
-  }
   return <span className="font-mono text-xs text-muted-foreground">{proof}</span>;
-}
+};
 
-function AmountBadge({ tx }: { tx: Transaction }) {
-  if (tx.in !== null && tx.in > 0) {
-    return <span className="font-mono font-bold tabular-nums text-primary">+{formatChf(tx.in)}</span>;
-  }
-  if (tx.out !== null && tx.out > 0) {
-    return <span className="font-mono font-bold tabular-nums text-destructive">−{formatChf(tx.out)}</span>;
-  }
+const AmountBadge = ({ tx }: { tx: Transaction }) => {
+  if (tx.in !== null && tx.in > 0)
+    return <span className="font-mono font-bold tabular-nums text-primary">+{formatDevise(tx.in)}</span>;
+  if (tx.out !== null && tx.out > 0)
+    return <span className="font-mono font-bold tabular-nums text-destructive">−{formatDevise(tx.out)}</span>;
   return <span className="font-mono text-muted-foreground/30">—</span>;
-}
+};
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const session = await getSession();
-  const selectedYear = await getSelectedYear();
-  const spreadsheetId = await getSpreadsheetId(session.accessToken!, selectedYear);
+  const spreadsheetId = await getSpreadsheetId();
 
-  const [meta, contactRows] = await Promise.all([
-    getSpreadsheetMeta(session.accessToken!, spreadsheetId),
-    getSheetValues(session.accessToken!, spreadsheetId, sheetRange("Contacts", "A:B")).catch(() => []),
+  const [meta, persons, merchants] = await Promise.all([
+    getSpreadsheetMeta({ spreadsheetId }),
+    getPersons(),
+    getMerchants(),
   ]);
 
   const sheet = meta.sheets.find((s) => toSlug(s.title) === slug && !SPECIAL_SHEETS.includes(s.title));
   if (!sheet) notFound();
 
-  const rows = await getSheetValues(session.accessToken!, spreadsheetId, sheetRange(sheet.title, "A:H"));
+  const rows = spreadsheetId
+    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: sheet.title, columns: "A:I" }) })
+    : [];
 
   const transactions = parseTransactions(rows);
-  const contacts = parseContacts(contactRows);
-  const persons = filterPersons(contacts);
 
   const totalIn = transactions.reduce((s, t) => s + (t.in ?? 0), 0);
   const totalOut = transactions.reduce((s, t) => s + (t.out ?? 0), 0);
@@ -79,25 +75,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
     { label: "Résultat", value: delta, color: "auto" as const },
   ];
 
-  // Common props for TransactionActions
-  const actionProps = { spreadsheetId, sheetTitle: sheet.title, sheetId: sheet.sheetId, persons };
+  const actionProps = { sheetTitle: sheet.title, persons, merchants };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="pb-5 border-b border-border">
-        <div className="hidden md:flex items-center gap-2 font-mono text-xs text-muted-foreground mb-4">
-          <Link href="/" className="hover:text-foreground transition-colors hidden md:inline">
-            Comptes
-          </Link>
-          <span className="hidden md:inline opacity-40">·</span>
-          <Link href="/events" className="hover:text-foreground transition-colors">
-            Événements
-          </Link>
-          <span className="opacity-40">·</span>
-          <span className="text-foreground truncate max-w-[160px] md:max-w-none">{sheet.title}</span>
-        </div>
-
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Événement</p>
@@ -106,22 +88,21 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <AddTransactionDialog spreadsheetId={spreadsheetId} sheetTitle={sheet.title} persons={persons} />
-            <a
-              href={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheet.sheetId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground hover:text-foreground transition-colors border border-border px-3 py-2 hover:border-foreground/30"
-            >
-              <ExternalLink className="w-3 h-3" />
-              Sheets
-            </a>
+          <div className="flex items-center gap-2 shrink-0">
+            <AddTransactionDialog {...actionProps} />
+            <Button variant="outline" size="icon" className="text-muted-foreground hover:text-foreground">
+              <a
+                href={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheet.sheetId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* KPI strip */}
       <div className="border border-border">
         <div className="md:hidden divide-y divide-border">
           {kpis.map(({ label, value, color }) => {
@@ -138,8 +119,8 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             return (
               <div key={label} className="flex items-center justify-between px-4 py-3.5 bg-card">
                 <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
-                <p className={`font-mono text-base font-bold tabular-nums ${cls}`}>
-                  {value === 0 ? "—" : formatChf(value)}
+                <p className={cn("font-mono text-base font-bold tabular-nums", cls)}>
+                  {value === 0 ? "—" : formatDevise(value)}
                 </p>
               </div>
             );
@@ -160,8 +141,8 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             return (
               <div key={label} className="bg-card px-5 py-5">
                 <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-3">{label}</p>
-                <p className={`font-mono text-2xl font-bold tabular-nums leading-none ${cls}`}>
-                  {value === 0 ? "—" : formatChf(value)}
+                <p className={cn("font-mono text-2xl font-bold tabular-nums leading-none", cls)}>
+                  {value === 0 ? "—" : formatDevise(value)}
                 </p>
               </div>
             );
@@ -169,29 +150,33 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
         </div>
       </div>
 
-      {/* Transactions */}
       {transactions.length === 0 ? (
         <div className="border border-border py-16 font-mono text-sm text-muted-foreground text-center">
           Aucune transaction.
         </div>
       ) : (
-        <>
-          {/* Mobile cards */}
+        <Fragment>
           <div className="md:hidden border border-border">
             {transactions.map((tx) => (
               <div key={tx.rowIndex} className="flex items-stretch border-b border-border last:border-0">
                 <div
-                  className={`w-0.5 flex-shrink-0 ${tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border"}`}
+                  className={cn(
+                    "w-0.5 flex-shrink-0",
+                    tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border",
+                  )}
                 />
                 <div className="flex items-center gap-3 flex-1 px-4 py-3.5 min-w-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate">{tx.description || "—"}</p>
+                    <p className="text-sm text-foreground truncate">{tx.description || tx.merchant || "—"}</p>
                     <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
                       <span>{tx.date}</span>
                       {tx.source ? <span> · {tx.source}</span> : null}
                       {tx.destination ? <span className="opacity-60"> → {tx.destination}</span> : null}
                     </p>
                     {tx.person && <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>}
+                    {tx.merchant && tx.description && (
+                      <p className="font-mono text-[11px] text-muted-foreground/60 mt-0.5">{tx.merchant}</p>
+                    )}
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0">
                     <AmountBadge tx={tx} />
@@ -207,10 +192,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             ))}
           </div>
 
-          {/* Desktop table — grid: date desc src dest person amount proof actions */}
           <div className="hidden md:block border border-border">
-            <div className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
-              {["Date", "Description", "Source", "Destination", "Personne"].map((col) => (
+            <div className="grid grid-cols-[100px_1fr_1fr_1fr_120px_120px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
+              {["Date", "Description", "Source", "Destination", "Exécutant", "Marchant"].map((col) => (
                 <span key={col} className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">
                   {col}
                 </span>
@@ -226,13 +210,14 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             {transactions.map((tx) => (
               <div
                 key={tx.rowIndex}
-                className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/[0.04] transition-colors group"
+                className="grid grid-cols-[100px_1fr_1fr_1fr_120px_120px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/[0.04] transition-colors group"
               >
                 <span className="font-mono text-sm text-muted-foreground tabular-nums">{tx.date}</span>
                 <span className="text-sm text-foreground truncate">{tx.description || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.source || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.destination || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.person || "—"}</span>
+                <span className="text-sm text-muted-foreground truncate">{tx.merchant || "—"}</span>
                 <div className="text-sm text-right">
                   <AmountBadge tx={tx} />
                 </div>
@@ -245,7 +230,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               </div>
             ))}
           </div>
-        </>
+        </Fragment>
       )}
     </div>
   );

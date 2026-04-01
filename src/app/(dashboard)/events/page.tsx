@@ -1,21 +1,16 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { getSpreadsheetMeta } from "@/lib/google/sheets";
+import { getSpreadsheetMeta } from "@/lib/sheets";
 import { toSlug } from "@/lib/utils";
-import { getSession } from "@/services/auth";
-import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/sheets";
-import { getSelectedYear } from "@/services/year";
+import { getSpreadsheetId, SPECIAL_SHEETS } from "@/services/spreadsheet";
 
 export default async function EventsPage() {
-  const session = await getSession();
-  const selectedYear = await getSelectedYear();
-  const spreadsheetId = await getSpreadsheetId(session.accessToken!, selectedYear);
-  const meta = await getSpreadsheetMeta(session.accessToken!, spreadsheetId);
+  const spreadsheetId = await getSpreadsheetId();
+  const meta = spreadsheetId ? await getSpreadsheetMeta({ spreadsheetId }) : { sheets: [] };
   const eventSheets = meta.sheets.filter((s) => !SPECIAL_SHEETS.includes(s.title));
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="pb-4 border-b border-border">
         <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Liste</p>
         <h1 className="font-mono text-4xl font-bold text-foreground leading-none">Événements</h1>
@@ -24,7 +19,6 @@ export default async function EventsPage() {
         </p>
       </div>
 
-      {/* List */}
       <div className="border border-border">
         {eventSheets.map((sheet, i) => (
           <Link
