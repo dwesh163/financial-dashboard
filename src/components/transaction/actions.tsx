@@ -50,7 +50,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
         <button
           type="button"
           onClick={() => setEditOpen(true)}
-          className="p-1.5 text-muted-foreground/40 hover:text-foreground transition-colors"
+          className="p-1.5 text-muted-foreground opacity-50 cursor-pointer hover:text-foreground transition-colors"
           title="Modifier"
         >
           <Pencil className="w-3.5 h-3.5" />
@@ -58,7 +58,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
         <button
           type="button"
           onClick={() => setDeleteOpen(true)}
-          className="p-1.5 text-muted-foreground/40 hover:text-destructive transition-colors"
+          className="p-1.5 text-muted-foreground opacity-50 cursor-pointer hover:text-destructive transition-colors"
           title="Supprimer"
         >
           <Trash2 className="w-3.5 h-3.5" />

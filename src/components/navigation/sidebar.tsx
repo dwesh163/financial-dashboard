@@ -93,24 +93,24 @@ export const Sidebar = ({ sheets, userName, userImage, years, selectedYear }: Si
             >
               <CalendarDays className="w-3.5 h-3.5 shrink-0" />
               <span className="flex-1 text-left">Événements</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setError(null);
+                  setNewEventName("");
+                  setNewEventOpen(true);
+                }}
+                className="p-1 text-muted-foreground opacity-80 -mr-2 hover:text-foreground transition-colors shrink-0"
+                title="Nouvel événement"
+              >
+                <Plus className="w-3 h-3" />
+              </button>
               {eventsOpen ? (
                 <ChevronDown className="w-3 h-3 opacity-40" />
               ) : (
                 <ChevronRight className="w-3 h-3 opacity-40" />
               )}
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setError(null);
-                setNewEventName("");
-                setNewEventOpen(true);
-              }}
-              className="p-1 text-muted-foreground/40 hover:text-foreground transition-colors shrink-0"
-              title="Nouvel événement"
-            >
-              <Plus className="w-3 h-3" />
             </button>
           </div>
 

@@ -5,7 +5,7 @@ import type { CounterpartSelectProps } from "@/types/props";
 
 export const CounterpartSelect = ({ value, onValueChange, options }: CounterpartSelectProps) => (
   <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger className="w-full">
+    <SelectTrigger className="w-full h-9!">
       <SelectValue placeholder="Choisir..." />
     </SelectTrigger>
     <SelectContent position="popper" className="w-full min-w-(--radix-select-trigger-width)">

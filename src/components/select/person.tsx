@@ -11,9 +11,9 @@ export const PersonSelect = ({ persons, value, onValueChange, placeholder = "Sé
 
   return (
     <Select value={value || NONE} onValueChange={handleChange}>
-      <SelectTrigger className="w-full h-9">
+      <SelectTrigger className="w-full h-9!">
         <div className="flex items-center gap-2 min-w-0">
-          <User className="w-3.5 h-3.5 flex-shrink-0 text-muted-foreground" />
+          <User className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
           <SelectValue placeholder={placeholder} />
         </div>
       </SelectTrigger>

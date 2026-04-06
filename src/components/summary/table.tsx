@@ -85,7 +85,7 @@ export const SummaryTable = ({ events, totals }: SummaryTableProps) => {
             href={`/events/${event.slug}`}
             className={cn(
               "grid grid-cols-[1fr_120px_120px_120px_120px_110px] gap-2 items-center px-5 py-3.5 border-b border-border last:border-0 transition-colors group",
-              hasData ? "hover:bg-white/[0.04]" : "opacity-25 cursor-default pointer-events-none",
+              hasData ? "hover:bg-white/4" : "opacity-25 cursor-default pointer-events-none",
             )}
           >
             <p className="text-sm text-foreground group-hover:text-primary transition-colors truncate">
