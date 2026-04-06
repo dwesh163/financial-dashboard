@@ -23,3 +23,6 @@ export type NewTransaction = {
   proof: string;
 };
 
+export type CreateTransactionParams = { sheetTitle: string; tx: NewTransaction };
+export type UpdateTransactionParams = { sheetTitle: string; rowIndex: number; tx: NewTransaction };
+export type DeleteTransactionParams = { sheetTitle: string; rowIndex: number };

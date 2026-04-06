@@ -1,3 +1,4 @@
+import type { MerchantOptions } from "@/lib/merchant-options";
 import type { Contact } from "@/types/contact";
 import type { SheetTab, UploadedFile } from "@/types/google";
 import type { Transaction, TransactionType } from "@/types/transaction";
@@ -28,3 +29,6 @@ export type TypeOption = {
   color: string;
   bg: string;
 };
+export type CounterpartSelectProps = { value: string; onValueChange: (v: string) => void; options: MerchantOptions };
+export type ProofDisplayProps = { proof: string };
+export type AmountBadgeProps = { tx: Transaction };
