@@ -19,13 +19,15 @@ export default function LoginPage() {
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <TrendingUp className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="text-sm font-semibold text-foreground tracking-tight">JCM - Finances</span>
+          <span className="text-sm font-semibold text-foreground tracking-tight">JCM — Finances</span>
         </div>
+
         <div className="flex flex-col gap-6">
           <div>
-            <h1 className="text-3xl font-semibold text-foreground tracking-tight leading-tight">Welcome back</h1>
-            <p className="text-sm text-muted-foreground mt-2">Sign in to your account to continue</p>
+            <h1 className="text-3xl font-semibold text-foreground tracking-tight leading-tight">Bienvenue</h1>
+            <p className="text-sm text-muted-foreground mt-2">Connectez-vous pour accéder à votre espace.</p>
           </div>
+
           <button
             type="button"
             onClick={handleGoogleSignIn}
@@ -52,36 +54,28 @@ export default function LoginPage() {
                 />
               </svg>
             )}
-            {loading ? "Signing in…" : "Continue with Google"}
+            {loading ? "Connexion en cours…" : "Continuer avec Google"}
           </button>
+
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-muted-foreground">secure sign-in</span>
+            <span className="text-xs text-muted-foreground">connexion sécurisée</span>
             <div className="flex-1 h-px bg-border" />
           </div>
-          <p className="text-xs text-muted-foreground text-center leading-relaxed">
-            By signing in, you agree to our{" "}
-            <a href="/terms" className="text-primary hover:underline">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="/privacy" className="text-primary hover:underline">
-              Privacy Policy
-            </a>
-          </p>
         </div>
-        <p className="text-xs text-muted-foreground">© 2026 JCM - Finances. All rights reserved.</p>
+
+        <p className="text-xs text-muted-foreground">© 2026 JCM — Finances. Tous droits réservés.</p>
       </div>
 
       <div className="hidden lg:flex flex-1 flex-col justify-between px-16 py-12">
         <div className="max-w-md">
           <h2 className="text-3xl font-semibold text-foreground tracking-tight leading-snug">
-            Your finances,
+            Vos finances,
             <br />
-            <span className="text-primary">fully in control.</span>
+            <span className="text-primary">parfaitement maîtrisées.</span>
           </h2>
           <p className="text-muted-foreground mt-3 text-sm leading-relaxed">
-            Track your assets, monitor your spending, and get a clear picture of your financial health.
+            Suivez vos actifs, contrôlez vos dépenses et obtenez une vue claire de votre santé financière.
           </p>
         </div>
       </div>
