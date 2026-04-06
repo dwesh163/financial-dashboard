@@ -6,7 +6,14 @@ import { CONTACTS_SPREADSHEET, FINANCES_FOLDER } from "@/constants/drive";
 import { MERCHANTS_SHEET, PERSONS_SHEET } from "@/constants/spreadsheet";
 import { createSpreadsheet, getFolder, searchFiles } from "@/lib/drive";
 import { appendSheetRow, ensureSheets, getSheetValues, sheetRange, updateSheetRow } from "@/lib/sheets";
-import type { AddMerchantParams, AddPersonParams, Contact, ContactType, ContactWithRow, UpdateMerchantNameParams } from "@/types/contact";
+import type {
+  AddMerchantParams,
+  AddPersonParams,
+  Contact,
+  ContactType,
+  ContactWithRow,
+  UpdateMerchantNameParams,
+} from "@/types/contact";
 
 const getContactsSpreadsheetId = cache(async (): Promise<string> => {
   const financesId = await getFolder({ name: FINANCES_FOLDER });
