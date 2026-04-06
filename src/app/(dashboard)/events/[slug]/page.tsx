@@ -1,26 +1,18 @@
 import { ExternalLink, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
-import { AddTransactionDialog } from "@/components/add-transaction-dialog";
-import { TransactionActions } from "@/components/transaction-actions";
+import { TransactionActions } from "@/components/transaction/actions";
+import { AddTransactionDialog } from "@/components/transaction/add";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
 import { formatDevise } from "@/lib/devise";
 import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/sheets";
 import { parseTransactions } from "@/lib/transactions";
-import { cn, toSlug } from "@/lib/utils";
+import { cn, isDriveUrl, toSlug } from "@/lib/utils";
 import { getMerchants, getPersons } from "@/services/contacts";
 import { getSpreadsheetId } from "@/services/spreadsheet";
 import type { AmountBadgeProps, ProofDisplayProps } from "@/types/props";
-
-const isDriveUrl = (v: string) => {
-  try {
-    new URL(v);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 const ProofDisplay = ({ proof }: ProofDisplayProps) => {
   if (!proof) return <span className="font-mono text-xs text-muted-foreground/30">—</span>;
@@ -32,7 +24,7 @@ const ProofDisplay = ({ proof }: ProofDisplayProps) => {
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline"
       >
-        <FileText className="w-3 h-3 flex-shrink-0" />
+        <FileText className="w-3 h-3 shrink-0" />
         Voir
       </a>
     );
@@ -46,6 +38,17 @@ const AmountBadge = ({ tx }: AmountBadgeProps) => {
     return <span className="font-mono font-bold tabular-nums text-destructive">−{formatDevise(tx.out)}</span>;
   return <span className="font-mono text-muted-foreground/30">—</span>;
 };
+
+const kpiClass = (color: "positive" | "negative" | "auto", value: number) =>
+  color === "positive"
+    ? "text-primary"
+    : color === "negative"
+      ? "text-destructive"
+      : value > 0
+        ? "text-primary"
+        : value < 0
+          ? "text-destructive"
+          : "text-foreground";
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -65,10 +68,10 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
     : [];
 
   const transactions = parseTransactions(rows);
-
   const totalIn = transactions.reduce((s, t) => s + (t.in ?? 0), 0);
   const totalOut = transactions.reduce((s, t) => s + (t.out ?? 0), 0);
   const delta = totalIn - totalOut;
+  const count = transactions.length;
 
   const kpis = [
     { label: "Entrées", value: totalIn, color: "positive" as const },
@@ -80,18 +83,14 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="space-y-6">
-      <div className="pb-5 border-b border-border">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Événement</p>
-            <h1 className="font-mono text-3xl md:text-4xl font-bold text-foreground leading-none">{sheet.title}</h1>
-            <p className="font-mono text-xs text-muted-foreground mt-2">
-              {transactions.length} transaction{transactions.length !== 1 ? "s" : ""}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+      <PageHeader
+        eyebrow="Événement"
+        title={sheet.title}
+        subtitle={`${count} transaction${count !== 1 ? "s" : ""}`}
+        action={
+          <div className="flex items-center gap-2">
             <AddTransactionDialog {...actionProps} />
-            <Button variant="outline" size="icon" className="text-muted-foreground hover:text-foreground">
+            <Button variant="outline" size="icon" asChild className="text-muted-foreground hover:text-foreground">
               <a
                 href={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#gid=${sheet.sheetId}`}
                 target="_blank"
@@ -101,57 +100,33 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               </a>
             </Button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="border border-border">
         <div className="md:hidden divide-y divide-border">
-          {kpis.map(({ label, value, color }) => {
-            const cls =
-              color === "positive"
-                ? "text-primary"
-                : color === "negative"
-                  ? "text-destructive"
-                  : value > 0
-                    ? "text-primary"
-                    : value < 0
-                      ? "text-destructive"
-                      : "text-foreground";
-            return (
-              <div key={label} className="flex items-center justify-between px-4 py-3.5 bg-card">
-                <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
-                <p className={cn("font-mono text-base font-bold tabular-nums", cls)}>
-                  {value === 0 ? "—" : formatDevise(value)}
-                </p>
-              </div>
-            );
-          })}
+          {kpis.map(({ label, value, color }) => (
+            <div key={label} className="flex items-center justify-between px-4 py-3.5 bg-card">
+              <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">{label}</p>
+              <p className={cn("font-mono text-base font-bold tabular-nums", kpiClass(color, value))}>
+                {value === 0 ? "—" : formatDevise(value)}
+              </p>
+            </div>
+          ))}
         </div>
         <div className="hidden md:grid md:grid-cols-3 gap-px bg-border">
-          {kpis.map(({ label, value, color }) => {
-            const cls =
-              color === "positive"
-                ? "text-primary"
-                : color === "negative"
-                  ? "text-destructive"
-                  : value > 0
-                    ? "text-primary"
-                    : value < 0
-                      ? "text-destructive"
-                      : "text-foreground";
-            return (
-              <div key={label} className="bg-card px-5 py-5">
-                <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-3">{label}</p>
-                <p className={cn("font-mono text-2xl font-bold tabular-nums leading-none", cls)}>
-                  {value === 0 ? "—" : formatDevise(value)}
-                </p>
-              </div>
-            );
-          })}
+          {kpis.map(({ label, value, color }) => (
+            <div key={label} className="bg-card px-5 py-5">
+              <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-3">{label}</p>
+              <p className={cn("font-mono text-2xl font-bold tabular-nums leading-none", kpiClass(color, value))}>
+                {value === 0 ? "—" : formatDevise(value)}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {transactions.length === 0 ? (
+      {count === 0 ? (
         <div className="border border-border py-16 font-mono text-sm text-muted-foreground text-center">
           Aucune transaction.
         </div>
@@ -162,7 +137,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
               <div key={tx.rowIndex} className="flex items-stretch border-b border-border last:border-0">
                 <div
                   className={cn(
-                    "w-0.5 flex-shrink-0",
+                    "w-0.5 shrink-0",
                     tx.in && tx.in > 0 ? "bg-primary" : tx.out && tx.out > 0 ? "bg-destructive" : "bg-border",
                   )}
                 />
@@ -178,7 +153,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                     </p>
                     {tx.person && <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>}
                   </div>
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <div className="flex flex-col items-end gap-1 shrink-0">
                     <AmountBadge tx={tx} />
                     {tx.proof && (
                       <p className="mt-0.5">
@@ -210,7 +185,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             {transactions.map((tx) => (
               <div
                 key={tx.rowIndex}
-                className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/[0.04] transition-colors group"
+                className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/4 transition-colors group"
               >
                 <span className="font-mono text-sm text-muted-foreground tabular-nums">{tx.date}</span>
                 <span className="text-sm text-foreground truncate">{tx.description || "—"}</span>

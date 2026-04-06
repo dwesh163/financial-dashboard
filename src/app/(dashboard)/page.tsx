@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
+import { SummaryTable } from "@/components/summary/table";
 import { formatDevise } from "@/lib/devise";
 import { getSheetValues, sheetRange } from "@/lib/sheets";
 import { cn } from "@/lib/utils";
@@ -63,7 +64,7 @@ export default async function SummaryPage() {
                   href={`/events/${event.slug}`}
                   className={cn(
                     "flex items-center justify-between px-4 py-3.5 border-b border-border last:border-0 transition-colors",
-                    hasData ? "hover:bg-white/[0.04] active:bg-white/[0.04]" : "opacity-25 pointer-events-none",
+                    hasData ? "hover:bg-white/4 active:bg-white/4" : "opacity-25 pointer-events-none",
                   )}
                 >
                   <div className="min-w-0">
@@ -72,7 +73,7 @@ export default async function SummaryPage() {
                       <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{event.subtitle}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
                     <Diff value={event.difference} />
                     <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30" />
                   </div>
@@ -126,83 +127,7 @@ export default async function SummaryPage() {
           ))}
         </div>
 
-        <div className="border border-border">
-          <div className="grid grid-cols-[1fr_120px_120px_120px_120px_110px] gap-2 px-5 py-2.5 bg-muted/30 border-b border-border">
-            {[
-              { label: "Événement", right: false },
-              { label: "Budget ▲", right: true },
-              { label: "Budget ▼", right: true },
-              { label: "Réel ▲", right: true },
-              { label: "Réel ▼", right: true },
-              { label: "Δ", right: true },
-            ].map(({ label, right }) => (
-              <span
-                key={label}
-                className={cn(
-                  "text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground",
-                  right && "text-right",
-                )}
-              >
-                {label}
-              </span>
-            ))}
-          </div>
-
-          {events.map((event: SummaryEvent) => {
-            const hasData = event.realIn !== 0 || event.realOut !== 0;
-            return (
-              <Link
-                key={event.slug}
-                href={`/events/${event.slug}`}
-                className={cn(
-                  "grid grid-cols-[1fr_120px_120px_120px_120px_110px] gap-2 items-center px-5 py-3.5 border-b border-border last:border-0 transition-colors group",
-                  hasData ? "hover:bg-white/[0.04]" : "opacity-25 cursor-default pointer-events-none",
-                )}
-              >
-                <p className="text-sm text-foreground group-hover:text-primary transition-colors truncate">
-                  {event.title}
-                  {event.subtitle && (
-                    <span className="ml-2 font-mono text-muted-foreground font-normal text-xs">{event.subtitle}</span>
-                  )}
-                </p>
-                <div className="font-mono text-sm text-right text-muted-foreground tabular-nums">
-                  {formatDevise(event.budgetIn)}
-                </div>
-                <div className="font-mono text-sm text-right text-muted-foreground tabular-nums">
-                  {formatDevise(event.budgetOut)}
-                </div>
-                <div className="font-mono text-sm text-right text-foreground tabular-nums">
-                  {formatDevise(event.realIn)}
-                </div>
-                <div className="font-mono text-sm text-right text-foreground tabular-nums">
-                  {formatDevise(event.realOut)}
-                </div>
-                <div className="text-sm text-right">
-                  <Diff value={event.difference} />
-                </div>
-              </Link>
-            );
-          })}
-
-          <div className="grid grid-cols-[1fr_120px_120px_120px_120px_110px] gap-2 items-center px-5 py-3.5 bg-muted/30 border-t border-border">
-            <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">Total</span>
-            <span className="font-mono text-sm text-right text-muted-foreground tabular-nums">
-              {formatDevise(totals.budgetIn)}
-            </span>
-            <span className="font-mono text-sm text-right text-muted-foreground tabular-nums">
-              {formatDevise(totals.budgetOut)}
-            </span>
-            <span className="font-mono text-sm font-bold text-right text-foreground tabular-nums">
-              {formatDevise(totals.realIn)}
-            </span>
-            <span className="font-mono text-sm font-bold text-right text-foreground tabular-nums">
-              {formatDevise(totals.realOut)}
-            </span>
-            <span className="text-sm font-bold text-right">
-              <Diff value={totals.difference} />
-            </span>
-          </div>
-        </div>
+        <SummaryTable events={events} totals={totals} />
       </div>
     </Fragment>
   );

@@ -1,74 +1,70 @@
-import { UserRound } from "lucide-react";
-import { AddPersonDialog } from "@/components/add-person-dialog";
-import { ContactsTabs } from "@/components/contacts-tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { EXTRAS_CONTACTS } from "@/constants/contacts";
-import { getMerchants, getPersons } from "@/services/contacts";
-import type { Contact } from "@/types/contact";
+import { ContactSection } from "@/components/contact/table";
+import { PageHeader } from "@/components/ui/page-header";
+import { COMMERCE_TYPES, EXTRAS_CONTACTS, PERSONS_TYPES } from "@/constants/contacts";
+import { addCommercant, addPerson, getMerchants, getPersons } from "@/services/contacts";
+import type { ContactType } from "@/types/contact";
 
-const PersonTable = ({ contacts }: { contacts: Contact[] }) => {
-  if (contacts.length === 0)
-    return (
-      <div className="border border-border py-10 font-mono text-sm text-muted-foreground text-center">
-        Aucune personne.
-      </div>
-    );
-  return (
-    <div className="border border-border">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/30">
-            <TableHead className="w-10 text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold" />
-            <TableHead className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
-              Nom
-            </TableHead>
-            <TableHead className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
-              IBAN
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {contacts.map((c, i) => (
-            <TableRow key={c.name} className="hover:bg-white/[0.04]">
-              <TableCell className="font-mono text-[10px] text-muted-foreground/40 text-right w-10">
-                {String(i + 1).padStart(2, "0")}
-              </TableCell>
-              <TableCell className="text-sm text-foreground">{c.name}</TableCell>
-              <TableCell className="font-mono text-xs text-muted-foreground">{c.iban ?? "—"}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-};
+const PERSON_COLUMNS = [{ label: "Nom" }, { label: "IBAN" }];
+const MERCHANT_COLUMNS = [{ label: "Nom" }, { label: "Adresse" }, { label: "Type" }];
+
+const PERSON_FIELDS = [
+  { type: "text" as const, key: "name", label: "Nom", placeholder: "Prénom Nom...", required: true },
+  { type: "text" as const, key: "iban", label: "IBAN", placeholder: "FR76..." },
+  { type: "select" as const, key: "scope", label: "Portée", options: PERSONS_TYPES },
+];
+
+const MERCHANT_FIELDS = [
+  { type: "text" as const, key: "name", label: "Nom", placeholder: "Nom du commerçant...", required: true },
+  { type: "select" as const, key: "type", label: "Type", options: COMMERCE_TYPES, required: true },
+  { type: "text" as const, key: "address", label: "Adresse", placeholder: "123 rue de la Paix..." },
+];
 
 export default async function ContactsPage() {
   const [persons, allMerchants] = await Promise.all([getPersons(), getMerchants()]);
   const merchants = allMerchants.filter((m) => !EXTRAS_CONTACTS.includes(m.name));
+  const total = persons.length + merchants.length;
+
+  async function submitPerson(v: Record<string, string>) {
+    "use server";
+    await addPerson({
+      name: v.name ?? "",
+      iban: v.iban?.trim() || undefined,
+      type: (v.scope as ContactType) || undefined,
+    });
+  }
+
+  async function submitMerchant(v: Record<string, string>) {
+    "use server";
+    await addCommercant({ name: v.name ?? "", type: v.type ?? "", address: v.address?.trim() || undefined });
+  }
 
   return (
     <div className="space-y-8">
-      <div className="pb-4 border-b border-border">
-        <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-1">Répertoire</p>
-        <h1 className="font-mono text-4xl font-bold text-foreground leading-none">Contacts</h1>
-        <p className="font-mono text-xs text-muted-foreground mt-2">{persons.length + merchants.length} contacts</p>
-      </div>
+      <PageHeader eyebrow="Répertoire" title="Contacts" subtitle={`${total} contact${total !== 1 ? "s" : ""}`} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <UserRound className="w-4 h-4 text-primary" />
-              <h2 className="font-mono text-sm font-semibold text-foreground uppercase tracking-[0.15em]">Personnes</h2>
-              <span className="font-mono text-xs text-muted-foreground">({persons.length})</span>
-            </div>
-            <AddPersonDialog />
-          </div>
-          <PersonTable contacts={persons} />
-        </div>
-
-        <ContactsTabs merchants={merchants} />
+        <ContactSection
+          icon="UserRound"
+          title="Personnes"
+          contacts={persons}
+          columns={PERSON_COLUMNS}
+          emptyMessage="Aucune personne."
+          addDialog={{ icon: "UserRound", title: "Nouvelle personne", fields: PERSON_FIELDS, onSubmit: submitPerson }}
+        />
+        <ContactSection
+          icon="Building2"
+          title="Commerçants"
+          contacts={merchants}
+          columns={MERCHANT_COLUMNS}
+          emptyMessage="Aucun commerçant."
+          grouped
+          addDialog={{
+            icon: "Building2",
+            title: "Nouveau commerçant",
+            fields: MERCHANT_FIELDS,
+            onSubmit: submitMerchant,
+          }}
+        />
       </div>
     </div>
   );
