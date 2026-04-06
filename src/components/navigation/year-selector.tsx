@@ -72,7 +72,7 @@ export const YearSelector = ({ years, selectedYear }: YearSelectorProps) => {
             setError(null);
             setOpen(true);
           }}
-          className="flex-shrink-0 h-8 w-8 flex items-center justify-center border border-border text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors"
+          className="shrink-0 h-8 w-8 flex items-center justify-center border border-border text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
           title="Nouvelle année"
         >
           <Plus className="w-3.5 h-3.5" />

@@ -41,7 +41,7 @@ export const ProofUpload = ({ onUploaded, className }: ProofUploadProps) => {
         disabled={loading}
         title="Joindre un PDF"
         className={cn(
-          "flex items-center justify-center h-9 w-9 flex-shrink-0 border transition-colors",
+          "flex items-center justify-center h-9 w-9 shrink-0 border transition-colors",
           uploaded
             ? "border-primary/40 text-primary"
             : "border-input text-muted-foreground hover:text-foreground hover:border-foreground/30",
