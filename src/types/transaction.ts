@@ -1,3 +1,13 @@
+export type TransactionFormValues = {
+  type: TransactionType;
+  date: string;
+  amount: string;
+  counterpart: string;
+  person: string;
+  description: string;
+  proof: string;
+};
+
 export type Transaction = {
   rowIndex: number;
   date: string;
