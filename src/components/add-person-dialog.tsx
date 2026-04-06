@@ -3,11 +3,11 @@
 import { Loader2, Plus, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
-import { addPerson } from "@/services/contacts";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { addPerson } from "@/services/contacts";
 import type { ContactType } from "@/types/contact";
 
 export const AddPersonDialog = () => {

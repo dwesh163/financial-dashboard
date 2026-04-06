@@ -3,7 +3,6 @@
 import { FileText, Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
-import { createTransaction } from "@/services/transactions";
 import { CounterpartSelect } from "@/components/counterpart-select";
 import { PersonSelect } from "@/components/person-select";
 import { ProofField } from "@/components/proof-field";
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { BANK_ACCOUNT, TRANSACTION_TYPE_OPTIONS as TYPE_OPTIONS } from "@/constants/transactions";
 import { buildMerchantOptions } from "@/lib/merchant-options";
 import { cn } from "@/lib/utils";
+import { createTransaction } from "@/services/transactions";
 import type { AddTransactionDialogProps } from "@/types/props";
 import type { TransactionType } from "@/types/transaction";
 

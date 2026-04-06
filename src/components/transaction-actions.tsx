@@ -1,9 +1,8 @@
 "use client";
 
-import { Fragment, useState } from "react";
 import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { deleteTransaction, updateTransaction } from "@/services/transactions";
+import { Fragment, useState } from "react";
 import { CounterpartSelect } from "@/components/counterpart-select";
 import { PersonSelect } from "@/components/person-select";
 import { ProofField } from "@/components/proof-field";
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { BANK_ACCOUNT, TRANSACTION_TYPE_OPTIONS as TYPE_OPTIONS } from "@/constants/transactions";
 import { buildMerchantOptions } from "@/lib/merchant-options";
 import { cn } from "@/lib/utils";
+import { deleteTransaction, updateTransaction } from "@/services/transactions";
 import type { TransactionActionsProps } from "@/types/props";
 import type { Transaction, TransactionType } from "@/types/transaction";
 

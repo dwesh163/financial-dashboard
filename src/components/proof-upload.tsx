@@ -2,8 +2,8 @@
 
 import { CheckCircle2, Loader2, Paperclip } from "lucide-react";
 import { useRef, useState } from "react";
-import { uploadProof } from "@/services/drive";
 import { cn } from "@/lib/utils";
+import { uploadProof } from "@/services/drive";
 import type { ProofUploadProps } from "@/types/props";
 
 export const ProofUpload = ({ onUploaded, className }: ProofUploadProps) => {
