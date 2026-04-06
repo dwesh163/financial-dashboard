@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "JCM - Finances",
-  description: "Personal financial management",
+  description: "Dashboard de gestion financière pour les JCM",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

@@ -13,12 +13,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="dark min-h-screen flex bg-background">
       <div className="hidden md:flex">
-        <Sidebar
-          sheets={meta.sheets}
-          userName={session.user?.name ?? session.user?.email ?? ""}
-          years={years}
-          selectedYear={selectedYear}
-        />
+        <Sidebar sheets={meta.sheets} session={session} years={years} selectedYear={selectedYear} />
       </div>
       <main className="flex-1 px-4 pt-16 pb-20 md:px-8 md:py-8 md:pb-8 overflow-auto min-w-0 md:ml-56">{children}</main>
       <MobileNav />
