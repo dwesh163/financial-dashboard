@@ -9,22 +9,34 @@ import {
   Loader2,
   LogOut,
   Plus,
+  UserRound,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import { Fragment, useState } from "react";
-import { createEvent } from "@/services/spreadsheet";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { YearSelector } from "@/components/year-selector";
 import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
 import { cn, toSlug } from "@/lib/utils";
-import type { SidebarProps } from "@/types/props";
+import { createEvent } from "@/services/spreadsheet";
 
-export const Sidebar = ({ sheets, userName, years, selectedYear }: SidebarProps) => {
+export const Sidebar = ({
+  sheets,
+  session,
+  years,
+  selectedYear,
+}: {
+  sheets: { title: string; sheetId: number }[];
+  session: Session;
+  years: number[];
+  selectedYear: number;
+}) => {
   const pathname = usePathname();
   const router = useRouter();
   const [eventsOpen, setEventsOpen] = useState(pathname.startsWith("/events") || pathname === "/");
@@ -137,7 +149,7 @@ export const Sidebar = ({ sheets, userName, years, selectedYear }: SidebarProps)
             <p className="px-5 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">Contacts</p>
 
             <Link
-              href="/contacts?type=commerce"
+              href="/contacts"
               className={cn(
                 "flex items-center gap-2.5 pl-5 pr-4 py-2 text-sm border-l-2 transition-all",
                 pathname === "/contacts"
@@ -150,7 +162,7 @@ export const Sidebar = ({ sheets, userName, years, selectedYear }: SidebarProps)
             </Link>
 
             <Link
-              href="/contacts?type=personne"
+              href="/contacts"
               className="flex items-center gap-2.5 pl-5 pr-4 py-2 text-sm border-l-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-all"
             >
               <Users className="w-3.5 h-3.5 flex-shrink-0" />
@@ -164,7 +176,14 @@ export const Sidebar = ({ sheets, userName, years, selectedYear }: SidebarProps)
         </div>
 
         <div className="border-t border-border px-5 py-3.5 flex items-center justify-between gap-2">
-          <p className="font-mono text-[11px] text-muted-foreground truncate">{userName}</p>
+          <div className="flex items-center gap-2">
+            {session.user?.image ? (
+              <Image src={session.user?.image} alt="Avatar" width={24} height={24} className="rounded-full" />
+            ) : (
+              <UserRound className="w-8 h-8 rounded-full bg-muted text-muted-foreground p-1" />
+            )}
+            <p className="font-mono text-[11px] text-muted-foreground truncate">{session.user.name}</p>
+          </div>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}

@@ -14,7 +14,7 @@ import { BANK_ACCOUNT, TRANSACTION_TYPE_OPTIONS as TYPE_OPTIONS } from "@/consta
 import { buildMerchantOptions } from "@/lib/merchant-options";
 import { cn } from "@/lib/utils";
 import type { TransactionActionsProps } from "@/types/props";
-import type { TransactionType } from "@/types/transaction";
+import type { Transaction, TransactionType } from "@/types/transaction";
 
 const toIsoDate = (display: string): string => {
   const [d, m, y] = display.split(".");
@@ -26,8 +26,7 @@ const toDisplayDate = (iso: string): string => {
   return `${d}.${m}.${y}`;
 };
 
-const detectType = ({ tx }: { tx: { in: number | null; out: number | null } }): TransactionType =>
-  tx.in && tx.in > 0 ? "in" : "out";
+const detectType = (tx: Pick<Transaction, "in" | "out">): TransactionType => (tx.in && tx.in > 0 ? "in" : "out");
 
 export const TransactionActions = ({ transaction, sheetTitle, persons, merchants }: TransactionActionsProps) => {
   const router = useRouter();
@@ -36,7 +35,7 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const initialType = detectType({ tx: transaction });
+  const initialType = detectType(transaction);
   // counterpart = the non-bank side (source for "in", destination for "out")
   const initialCounterpart = initialType === "out" ? transaction.destination : transaction.source;
 
@@ -75,7 +74,16 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
       await updateTransaction({
         sheetTitle,
         rowIndex: transaction.rowIndex,
-        tx: { date: toDisplayDate(date), type, amount: parseFloat(amount), source, destination, person, description, proof },
+        tx: {
+          date: toDisplayDate(date),
+          type,
+          amount: parseFloat(amount),
+          source,
+          destination,
+          person,
+          description,
+          proof,
+        },
       });
       setEditOpen(false);
       router.refresh();
@@ -106,7 +114,10 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
       <div className="flex items-center justify-end gap-1">
         <button
           type="button"
-          onClick={() => { resetEdit(); setEditOpen(true); }}
+          onClick={() => {
+            resetEdit();
+            setEditOpen(true);
+          }}
           className="p-1.5 text-muted-foreground/40 hover:text-foreground transition-colors"
           title="Modifier"
         >
@@ -122,7 +133,13 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
         </button>
       </div>
 
-      <Dialog open={editOpen} onOpenChange={(v) => { setEditOpen(v); if (!v) resetEdit(); }}>
+      <Dialog
+        open={editOpen}
+        onOpenChange={(v) => {
+          setEditOpen(v);
+          if (!v) resetEdit();
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -162,7 +179,15 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
               </div>
               <div>
                 <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Montant (CHF)</p>
-                <Input type="number" step="0.01" min="0.01" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
               </div>
             </div>
 
@@ -198,7 +223,11 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
 
             <div>
               <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Description</p>
-              <Input placeholder="Description..." value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Input
+                placeholder="Description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
 
             <div>
@@ -206,10 +235,20 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
               <ProofField value={proof} onChange={setProof} />
             </div>
 
-            {error && <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>}
+            {error && (
+              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>
+            )}
 
             <div className="flex justify-end gap-2 pt-2 border-t border-border">
-              <Button type="button" variant="ghost" onClick={() => { setEditOpen(false); resetEdit(); }} disabled={loading}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  setEditOpen(false);
+                  resetEdit();
+                }}
+                disabled={loading}
+              >
                 Annuler
               </Button>
               <Button type="submit" disabled={loading} className="min-w-28">
@@ -236,12 +275,20 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
             <p className="font-mono text-xs text-muted-foreground">
               Cette action supprime définitivement la ligne {transaction.rowIndex} du sheet.
             </p>
-            {error && <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>}
+            {error && (
+              <p className="font-mono text-xs text-destructive border border-destructive/30 px-3 py-2">{error}</p>
+            )}
             <div className="flex justify-end gap-2 pt-1 border-t border-border">
               <Button type="button" variant="ghost" onClick={() => setDeleteOpen(false)} disabled={loading}>
                 Annuler
               </Button>
-              <Button type="button" variant="destructive" onClick={handleDelete} disabled={loading} className="min-w-28">
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={loading}
+                className="min-w-28"
+              >
                 {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Supprimer"}
               </Button>
             </div>
