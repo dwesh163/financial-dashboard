@@ -6,7 +6,7 @@ import { CONTACTS_SPREADSHEET, FINANCES_FOLDER } from "@/constants/drive";
 import { MERCHANTS_SHEET, PERSONS_SHEET } from "@/constants/spreadsheet";
 import { createSpreadsheet, getFolder, searchFiles } from "@/lib/drive";
 import { appendSheetRow, ensureSheets, getSheetValues, sheetRange, updateSheetRow } from "@/lib/sheets";
-import type { Contact, ContactType } from "@/types/contact";
+import type { AddMerchantParams, AddPersonParams, Contact, ContactType, ContactWithRow, UpdateMerchantNameParams } from "@/types/contact";
 
 const getContactsSpreadsheetId = cache(async (): Promise<string> => {
   const financesId = await getFolder({ name: FINANCES_FOLDER });
@@ -51,7 +51,7 @@ export const getMerchants = async (): Promise<Contact[]> => {
     }));
 };
 
-export const getMerchantsWithRows = async (): Promise<{ rowIndex: number; contact: Contact }[]> => {
+export const getMerchantsWithRows = async (): Promise<ContactWithRow[]> => {
   const spreadsheetId = await getContactsSpreadsheetId();
   const rows = await getSheetValues({ spreadsheetId, range: sheetRange({ title: MERCHANTS_SHEET, columns: "A:C" }) });
   return rows
@@ -61,14 +61,14 @@ export const getMerchantsWithRows = async (): Promise<{ rowIndex: number; contac
     .map(({ r, rowIndex }) => ({
       rowIndex,
       contact: {
-        name: r[0]!.trim(),
+        name: r[0]?.trim() ?? "",
         type: (r[1]?.trim() as ContactType) || "Store",
         address: r[2]?.trim(),
       },
     }));
 };
 
-export const updateMerchantName = async ({ rowIndex, name }: { rowIndex: number; name: string }): Promise<void> => {
+export const updateMerchantName = async ({ rowIndex, name }: UpdateMerchantNameParams): Promise<void> => {
   const spreadsheetId = await getContactsSpreadsheetId();
   await updateSheetRow({
     spreadsheetId,
@@ -77,15 +77,7 @@ export const updateMerchantName = async ({ rowIndex, name }: { rowIndex: number;
   });
 };
 
-export const addPerson = async ({
-  name,
-  iban,
-  type,
-}: {
-  name: string;
-  iban?: string;
-  type?: ContactType;
-}): Promise<void> => {
+export const addPerson = async ({ name, iban, type }: AddPersonParams): Promise<void> => {
   const spreadsheetId = await getContactsSpreadsheetId();
   const typeLabel = type ?? "Person";
   await appendSheetRow({
@@ -95,15 +87,7 @@ export const addPerson = async ({
   });
 };
 
-export const addMerchant = async ({
-  name,
-  type,
-  address,
-}: {
-  name: string;
-  type: string;
-  address?: string;
-}): Promise<void> => {
+export const addMerchant = async ({ name, type, address }: AddMerchantParams): Promise<void> => {
   const spreadsheetId = await getContactsSpreadsheetId();
   const typeLabel = type ?? "Store";
   await appendSheetRow({
@@ -113,15 +97,7 @@ export const addMerchant = async ({
   });
 };
 
-export const addCommercant = async ({
-  name,
-  type,
-  address,
-}: {
-  name: string;
-  type: string;
-  address?: string;
-}): Promise<void> => {
+export const addCommercant = async ({ name, type, address }: AddMerchantParams): Promise<void> => {
   const existing = await getMerchantsWithRows();
   const baseName = name.split(" - ")[0] ?? name;
   const match = existing.find(({ contact: m }) => (m.name.split(" - ")[0] ?? m.name) === baseName);

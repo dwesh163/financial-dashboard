@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import type { AuthTokens } from "@/types/auth";
 
 export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   session: { strategy: "jwt" },
@@ -24,6 +25,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
         return { ...token, selectedYear: session.selectedYear };
       if (account)
         return {
+          ...token,
           accessToken: account.access_token,
           refreshToken: account.refresh_token,
           expiresAt: account.expires_at,
@@ -78,7 +80,7 @@ export const getSession = async () => {
   return session;
 };
 
-export const getTokens = async (): Promise<{ accessToken: string; refreshToken: string; expiresAt: number }> => {
+export const getTokens = async (): Promise<AuthTokens> => {
   const session = await auth();
   if (!session?.accessToken) throw new Error("unauthenticated");
   if (session.error === "RefreshTokenError") throw new Error("Token refresh failed");
@@ -89,4 +91,3 @@ export const getSelectedYear = async (): Promise<number> => {
   const session = await auth();
   return session?.selectedYear ?? new Date().getFullYear();
 };
-
