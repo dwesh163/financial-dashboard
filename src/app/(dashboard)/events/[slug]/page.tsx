@@ -11,7 +11,7 @@ import { getMerchants, getPersons } from "@/services/contacts";
 import { parseTransactions } from "@/lib/transactions";
 import { getSpreadsheetId } from "@/services/spreadsheet";
 import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
-import type { Transaction } from "@/types/transaction";
+import type { AmountBadgeProps, ProofDisplayProps } from "@/types/props";
 
 const isDriveUrl = (v: string) => {
   try {
@@ -22,7 +22,7 @@ const isDriveUrl = (v: string) => {
   }
 };
 
-const ProofDisplay = ({ proof }: { proof: string }) => {
+const ProofDisplay = ({ proof }: ProofDisplayProps) => {
   if (!proof) return <span className="font-mono text-xs text-muted-foreground/30">—</span>;
   if (isDriveUrl(proof))
     return (
@@ -39,7 +39,7 @@ const ProofDisplay = ({ proof }: { proof: string }) => {
   return <span className="font-mono text-xs text-muted-foreground">{proof}</span>;
 };
 
-const AmountBadge = ({ tx }: { tx: Transaction }) => {
+const AmountBadge = ({ tx }: AmountBadgeProps) => {
   if (tx.in !== null && tx.in > 0)
     return <span className="font-mono font-bold tabular-nums text-primary">+{formatDevise(tx.in)}</span>;
   if (tx.out !== null && tx.out > 0)
@@ -172,7 +172,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                     <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
                       <span>{tx.date}</span>
                       {tx.source ? <span> · {tx.source}</span> : null}
-                      {tx.destination && tx.description ? <span className="opacity-60"> · {tx.destination}</span> : null}
+                      {tx.destination && tx.description ? (
+                        <span className="opacity-60"> · {tx.destination}</span>
+                      ) : null}
                     </p>
                     {tx.person && <p className="font-mono text-[11px] text-muted-foreground mt-0.5">{tx.person}</p>}
                   </div>
@@ -197,8 +199,12 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                   {col}
                 </span>
               ))}
-              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-right">Montant</span>
-              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-center">Pièce</span>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-right">
+                Montant
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground text-center">
+                Pièce
+              </span>
               <span />
             </div>
             {transactions.map((tx) => (
@@ -211,8 +217,12 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 <span className="text-sm text-muted-foreground truncate">{tx.source || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.destination || "—"}</span>
                 <span className="text-sm text-muted-foreground truncate">{tx.person || "—"}</span>
-                <div className="text-sm text-right"><AmountBadge tx={tx} /></div>
-                <div className="text-center"><ProofDisplay proof={tx.proof} /></div>
+                <div className="text-sm text-right">
+                  <AmountBadge tx={tx} />
+                </div>
+                <div className="text-center">
+                  <ProofDisplay proof={tx.proof} />
+                </div>
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                   <TransactionActions transaction={tx} {...actionProps} />
                 </div>
