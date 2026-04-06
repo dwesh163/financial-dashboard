@@ -1,8 +1,8 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
 import { getSpreadsheetMeta } from "@/lib/sheets";
 import { toSlug } from "@/lib/utils";
-import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
 import { getSpreadsheetId } from "@/services/spreadsheet";
 
 export default async function EventsPage() {
