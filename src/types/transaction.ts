@@ -10,6 +10,7 @@ export type TransactionFormValues = {
 
 export type Transaction = {
   rowIndex: number;
+  id: string;
   date: string;
   out: number | null;
   in: number | null;
@@ -17,6 +18,7 @@ export type Transaction = {
   destination: string;
   person: string;
   description: string;
+  comment: string;
   proof: string;
 };
 

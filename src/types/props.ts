@@ -76,6 +76,7 @@ export type AddDialogProps = {
   fields: DialogFieldConfig[];
   onSubmit: (values: Record<string, string>) => Promise<void>;
 };
+export type DescriptionCellProps = { description: string; comment: string };
 export type FormErrorProps = { message: string };
 export type PageHeaderProps = {
   eyebrow: string;
