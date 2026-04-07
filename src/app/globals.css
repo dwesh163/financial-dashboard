@@ -86,6 +86,12 @@
   --chart-5: oklch(0.82 0.17 85);
 }
 
+@media (display-mode: standalone) {
+  .mobile-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
