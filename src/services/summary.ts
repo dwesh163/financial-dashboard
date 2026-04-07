@@ -35,14 +35,14 @@ export const parseSummary = (
 
   const indicators: SummaryIndicators = {
     soldeInitial: parseDevise(rows[2]?.[8]),
-    resultatBudgete: parseDevise(rows[5]?.[8]),
-    resultatReel: parseDevise(rows[6]?.[8]),
-    etatTheorique: parseDevise(rows[7]?.[8]),
-    etatReel: parseDevise(rows[8]?.[8]),
-    fortuneTheorique: parseDevise(rows[9]?.[8]),
-    fortuneReelle: parseDevise(rows[10]?.[8]),
-    ecart: parseDevise(rows[14]?.[8]),
-    lastCheck: rows[13]?.[8] ?? "",
+    resultatBudgete: parseDevise(rows[4]?.[8]),
+    resultatReel: parseDevise(rows[5]?.[8]),
+    etatTheorique: parseDevise(rows[6]?.[8]),
+    etatReel: parseDevise(rows[7]?.[8]),
+    fortuneTheorique: parseDevise(rows[8]?.[8]),
+    fortuneReelle: parseDevise(rows[9]?.[8]),
+    ecart: parseDevise(rows[11]?.[8]),
+    lastCheck: rows[10]?.[8] ?? "",
   };
 
   return { events, indicators, totals };
