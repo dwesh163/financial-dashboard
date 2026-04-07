@@ -131,10 +131,9 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                       <DescriptionCell description={tx.description || tx.destination || ""} comment={tx.comment} />
                     </p>
                     <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
-                      {tx.id && <span className="text-muted-foreground/40">{tx.id} · </span>}
                       <span>{tx.date}</span>
-                      {tx.source ? <span> · {tx.source}</span> : null}
-                      {tx.destination && tx.description ? (
+                      {tx.in && tx.source ? <span> · {tx.source}</span> : null}
+                      {tx.out && tx.destination && tx.description ? (
                         <span className="opacity-60"> · {tx.destination}</span>
                       ) : null}
                     </p>
@@ -142,11 +141,6 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
                     <AmountBadge tx={tx} />
-                    {tx.proof && (
-                      <p className="mt-0.5">
-                        <ProofDisplay proof={tx.proof} />
-                      </p>
-                    )}
                     <TransactionActions transaction={tx} {...actionProps} />
                   </div>
                 </div>

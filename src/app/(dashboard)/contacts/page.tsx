@@ -5,7 +5,7 @@ import { addCommercant, addPerson, getMerchants, getPersons } from "@/services/c
 import type { ContactType } from "@/types/contact";
 
 const PERSON_COLUMNS = [{ label: "Nom" }, { label: "IBAN" }];
-const MERCHANT_COLUMNS = [{ label: "Nom" }, { label: "Adresse" }, { label: "Type" }];
+const MERCHANT_COLUMNS = [{ label: "Nom" }, { label: "Adresse", className: "hidden md:table-cell" }, { label: "Type" }];
 
 const PERSON_FIELDS = [
   { type: "text" as const, key: "name", label: "Nom", placeholder: "Prénom Nom...", required: true },

@@ -1,12 +1,16 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
+import { ProfileDialog } from "@/components/profile/dialog";
 import { SummaryTable } from "@/components/summary/table";
 import { formatDevise } from "@/lib/devise";
 import { cn } from "@/lib/utils";
-import { getSelectedYear } from "@/services/auth";
+import { getSelectedYear, getSession } from "@/services/auth";
+import { listYearSpreadsheets } from "@/services/spreadsheet";
 import { getSummary } from "@/services/summary";
 import type { SummaryEvent } from "@/types/summary";
+
+const VERSION = "1.3.0";
 
 const Diff = ({ value }: { value: number }) => {
   if (value === 0) return <span className="font-mono text-muted-foreground/40">—</span>;
@@ -15,18 +19,31 @@ const Diff = ({ value }: { value: number }) => {
 };
 
 export default async function SummaryPage() {
-  const selectedYear = await getSelectedYear();
-  const { events, indicators, totals } = await getSummary();
+  const [selectedYear, years, session, { events, indicators, totals }] = await Promise.all([
+    getSelectedYear(),
+    listYearSpreadsheets(),
+    getSession(),
+    getSummary(),
+  ]);
 
   return (
     <Fragment>
       <div className="md:hidden space-y-6">
-        <div className="space-y-2 pt-1 border-b border-border pb-5">
-          <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">État du compte</p>
-          <p className="font-mono text-4xl font-bold tabular-nums text-foreground leading-none">
-            {formatDevise(indicators.etatReel)}
-          </p>
-          <p className="font-mono text-[11px] text-muted-foreground">Vérif.&nbsp;{indicators.lastCheck || "—"}</p>
+        <div className="flex items-start justify-between pt-1 border-b border-border pb-5">
+          <div className="space-y-2">
+            <p className="text-[9px] uppercase tracking-[0.25em] text-muted-foreground">État du compte</p>
+            <p className="font-mono text-4xl font-bold tabular-nums text-foreground leading-none">
+              {formatDevise(indicators.etatReel)}
+            </p>
+            <p className="font-mono text-[11px] text-muted-foreground">Vérif.&nbsp;{indicators.lastCheck || "—"}</p>
+          </div>
+          <ProfileDialog
+            userName={session.user?.name ?? ""}
+            userImage={session.user?.image ?? undefined}
+            years={years}
+            selectedYear={selectedYear}
+            version={VERSION}
+          />
         </div>
 
         <div className="grid grid-cols-3 gap-px bg-border border border-border">
