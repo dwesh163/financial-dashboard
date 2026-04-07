@@ -25,6 +25,17 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Finances",
   },
+  other: {
+    "apple-mobile-web-app-title": "JCM",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon0.svg", type: "image/svg+xml" },
+      { url: "/icon1.png", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
