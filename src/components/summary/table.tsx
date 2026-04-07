@@ -54,11 +54,11 @@ export const SummaryTable = ({ events, totals }: SummaryTableProps) => {
 
   const columns: { key: SortKey; label: string; icon?: React.ReactNode; right: boolean }[] = [
     { key: "title", label: "Événement", right: false },
-    { key: "budgetIn", label: "Budget", icon: <TrendingUp className="w-3 h-3" />, right: true },
-    { key: "budgetOut", label: "Budget", icon: <TrendingDown className="w-3 h-3" />, right: true },
-    { key: "realIn", label: "Réel", icon: <TrendingUp className="w-3 h-3" />, right: true },
-    { key: "realOut", label: "Réel", icon: <TrendingDown className="w-3 h-3" />, right: true },
-    { key: "difference", label: "Δ", right: true },
+    { key: "budgetIn", label: "Budget In", icon: <TrendingUp className="w-3 h-3" />, right: true },
+    { key: "budgetOut", label: "Budget Out", icon: <TrendingDown className="w-3 h-3" />, right: true },
+    { key: "realIn", label: "Réel In", icon: <TrendingUp className="w-3 h-3" />, right: true },
+    { key: "realOut", label: "Réel Out", icon: <TrendingDown className="w-3 h-3" />, right: true },
+    { key: "difference", label: "Bénefice", right: true },
   ];
 
   return (
