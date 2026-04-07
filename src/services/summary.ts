@@ -1,5 +1,8 @@
+import { SUMMARY_SHEET } from "@/constants/spreadsheet";
 import { parseDevise } from "@/lib/devise";
+import { getSheetValues, sheetRange } from "@/lib/sheets";
 import { toSlug } from "@/lib/utils";
+import { getSpreadsheetId } from "@/services/spreadsheet";
 import type { SummaryEvent, SummaryIndicators, SummaryTotals } from "@/types/summary";
 
 export const parseSummary = (
@@ -46,4 +49,15 @@ export const parseSummary = (
   };
 
   return { events, indicators, totals };
+};
+
+export const getSummary = async (): Promise<{
+  events: SummaryEvent[];
+  indicators: SummaryIndicators;
+  totals: SummaryTotals;
+}> => {
+  const spreadsheetId = await getSpreadsheetId();
+  if (!spreadsheetId) return parseSummary([]);
+  const rows = await getSheetValues({ spreadsheetId, range: sheetRange({ title: SUMMARY_SHEET }) });
+  return parseSummary(rows);
 };
