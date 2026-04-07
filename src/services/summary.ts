@@ -8,7 +8,8 @@ import type { SummaryEvent, SummaryIndicators, SummaryTotals } from "@/types/sum
 export const parseSummary = (
   rows: string[][],
 ): { events: SummaryEvent[]; indicators: SummaryIndicators; totals: SummaryTotals } => {
-  const eventRows = rows.slice(2, rows.length - 1);
+  const lastDataIndex = rows.reduce((last, row, i) => (row.slice(1, 6).some((v) => v?.trim()) ? i : last), -1);
+  const eventRows = rows.slice(2, lastDataIndex);
 
   const events: SummaryEvent[] = eventRows
     .filter((row) => row[0]?.trim())
@@ -27,7 +28,7 @@ export const parseSummary = (
       };
     });
 
-  const totalRow = rows[rows.length - 1] ?? [];
+  const totalRow = rows[lastDataIndex] ?? [];
   const totals: SummaryTotals = {
     budgetIn: parseDevise(totalRow[1]),
     budgetOut: parseDevise(totalRow[2]),
