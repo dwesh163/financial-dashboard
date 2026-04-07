@@ -1,15 +1,11 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
-import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
-import { getSpreadsheetMeta } from "@/lib/sheets";
 import { toSlug } from "@/lib/utils";
-import { getSpreadsheetId } from "@/services/spreadsheet";
+import { getEventSheets } from "@/services/events";
 
 export default async function EventsPage() {
-  const spreadsheetId = await getSpreadsheetId();
-  const meta = spreadsheetId ? await getSpreadsheetMeta({ spreadsheetId }) : { sheets: [] };
-  const eventSheets = meta.sheets.filter((s) => !SPECIAL_SHEETS.includes(s.title));
+  const eventSheets = await getEventSheets();
   const count = eventSheets.length;
 
   return (

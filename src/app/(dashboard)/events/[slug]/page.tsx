@@ -6,13 +6,9 @@ import { AddTransactionDialog } from "@/components/transaction/add";
 import { DescriptionCell } from "@/components/transaction/description-cell";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
-import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
 import { formatDevise } from "@/lib/devise";
-import { getSheetValues, getSpreadsheetMeta, sheetRange } from "@/lib/sheets";
-import { parseTransactions } from "@/lib/transactions";
-import { cn, isDriveUrl, toSlug } from "@/lib/utils";
-import { getMerchants, getPersons } from "@/services/contacts";
-import { getSpreadsheetId } from "@/services/spreadsheet";
+import { cn, isDriveUrl } from "@/lib/utils";
+import { getEventData } from "@/services/events";
 import type { AmountBadgeProps, ProofDisplayProps } from "@/types/props";
 
 const ProofDisplay = ({ proof }: ProofDisplayProps) => {
@@ -53,22 +49,9 @@ const kpiClass = (color: "positive" | "negative" | "auto", value: number) =>
 
 export default async function EventPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const spreadsheetId = await getSpreadsheetId();
-
-  const [meta, persons, merchants] = await Promise.all([
-    getSpreadsheetMeta({ spreadsheetId }),
-    getPersons(),
-    getMerchants(),
-  ]);
-
-  const sheet = meta.sheets.find((s) => toSlug(s.title) === slug && !SPECIAL_SHEETS.includes(s.title));
-  if (!sheet) notFound();
-
-  const rows = spreadsheetId
-    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: sheet.title, columns: "A:J" }) })
-    : [];
-
-  const transactions = parseTransactions(rows);
+  const data = await getEventData({ slug });
+  if (!data) notFound();
+  const { sheet, transactions, spreadsheetId, persons, merchants } = data;
   const totalIn = transactions.reduce((s, t) => s + (t.in ?? 0), 0);
   const totalOut = transactions.reduce((s, t) => s + (t.out ?? 0), 0);
   const delta = totalIn - totalOut;
