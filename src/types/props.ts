@@ -12,6 +12,13 @@ export type SidebarProps = {
   selectedYear: number;
 };
 export type YearSelectorProps = { years: number[]; selectedYear: number };
+export type ProfileDialogProps = {
+  userName: string;
+  userImage?: string;
+  years: number[];
+  selectedYear: number;
+  version: string;
+};
 export type PersonSelectProps = {
   persons: Contact[];
   value: string;

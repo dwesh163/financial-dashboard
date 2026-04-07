@@ -8,7 +8,7 @@ import type { SummaryEvent, SummaryIndicators, SummaryTotals } from "@/types/sum
 export const parseSummary = (
   rows: string[][],
 ): { events: SummaryEvent[]; indicators: SummaryIndicators; totals: SummaryTotals } => {
-  const eventRows = rows.slice(3, rows.length - 1);
+  const eventRows = rows.slice(2, rows.length - 1);
 
   const events: SummaryEvent[] = eventRows
     .filter((row) => row[0]?.trim())
