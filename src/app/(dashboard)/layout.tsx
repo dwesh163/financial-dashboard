@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           selectedYear={selectedYear}
         />
       </div>
-      <main className="flex-1 px-4 pt-16 pb-20 md:px-8 md:py-8 md:pb-8 overflow-auto min-w-0 md:ml-56">{children}</main>
+      <main className="flex-1 px-4 pt-[calc(1rem_+_env(safe-area-inset-top))] pb-[calc(5rem_+_env(safe-area-inset-bottom))] md:px-8 md:py-8 md:pb-8 overflow-auto min-w-0 md:ml-56">{children}</main>
       <MobileNav />
     </div>
   );
