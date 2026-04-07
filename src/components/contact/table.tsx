@@ -125,7 +125,7 @@ export const ContactSection = ({
                                 ))}
                             </span>
                           </TableCell>
-                          <TableCell className="font-mono text-xs text-muted-foreground truncate">
+                          <TableCell className="font-mono text-xs text-muted-foreground truncate hidden md:table-cell">
                             {isChain ? (
                               <span className="text-muted-foreground/40 italic text-[10px]">chaîne</span>
                             ) : (
@@ -142,7 +142,7 @@ export const ContactSection = ({
                               <TableCell className="pl-6 font-mono text-[10px] text-muted-foreground/50">
                                 #{j + 1}
                               </TableCell>
-                              <TableCell className="font-mono text-xs text-muted-foreground truncate">
+                              <TableCell className="font-mono text-xs text-muted-foreground truncate hidden md:table-cell">
                                 {b.address ?? "—"}
                               </TableCell>
                               <TableCell />
