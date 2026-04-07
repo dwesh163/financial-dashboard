@@ -1,6 +1,7 @@
 import { ExternalLink, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
+import { DescriptionCell } from "@/components/transaction/description-cell";
 import { TransactionActions } from "@/components/transaction/actions";
 import { AddTransactionDialog } from "@/components/transaction/add";
 import { Button } from "@/components/ui/button";
@@ -64,7 +65,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
   if (!sheet) notFound();
 
   const rows = spreadsheetId
-    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: sheet.title, columns: "A:H" }) })
+    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: sheet.title, columns: "A:J" }) })
     : [];
 
   const transactions = parseTransactions(rows);
@@ -143,8 +144,11 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
                 />
                 <div className="flex items-center gap-3 flex-1 px-4 py-3.5 min-w-0">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground truncate">{tx.description || tx.destination || "—"}</p>
+                    <p className="text-sm text-foreground truncate">
+                      <DescriptionCell description={tx.description || tx.destination || ""} comment={tx.comment} />
+                    </p>
                     <p className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">
+                      {tx.id && <span className="text-muted-foreground/40">{tx.id} · </span>}
                       <span>{tx.date}</span>
                       {tx.source ? <span> · {tx.source}</span> : null}
                       {tx.destination && tx.description ? (
@@ -168,8 +172,8 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           </div>
 
           <div className="hidden md:block border border-border">
-            <div className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
-              {["Date", "Description", "Source", "Destination", "Exécutant"].map((col) => (
+            <div className="grid grid-cols-[48px_100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 px-5 py-2.5 bg-muted/30 border-b border-border">
+              {["ID", "Date", "Description", "Source", "Destination", "Exécutant"].map((col) => (
                 <span key={col} className="text-[9px] uppercase tracking-[0.2em] font-semibold text-muted-foreground">
                   {col}
                 </span>
@@ -185,13 +189,16 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
             {transactions.map((tx) => (
               <div
                 key={tx.rowIndex}
-                className="grid grid-cols-[100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/4 transition-colors group"
+                className="grid grid-cols-[48px_100px_1fr_1fr_1fr_140px_130px_50px_64px] gap-3 items-center px-5 py-3 border-b border-border last:border-0 hover:bg-white/4 transition-colors group"
               >
+                <span className="font-mono text-[10px] text-muted-foreground/40 tabular-nums">{tx.id || "—"}</span>
                 <span className="font-mono text-sm text-muted-foreground tabular-nums">{tx.date}</span>
-                <span className="text-sm text-foreground truncate">{tx.description || "—"}</span>
-                <span className="text-sm text-muted-foreground truncate">{tx.source || "—"}</span>
-                <span className="text-sm text-muted-foreground truncate">{tx.destination || "—"}</span>
-                <span className="text-sm text-muted-foreground truncate">{tx.person || "—"}</span>
+                <span className="min-w-0 text-sm text-foreground">
+                  <DescriptionCell description={tx.description} comment={tx.comment} />
+                </span>
+                <span className="min-w-0 text-sm text-muted-foreground truncate">{tx.source || "—"}</span>
+                <span className="min-w-0 text-sm text-muted-foreground truncate">{tx.destination || "—"}</span>
+                <span className="min-w-0 text-sm text-muted-foreground truncate">{tx.person || "—"}</span>
                 <div className="text-sm text-right">
                   <AmountBadge tx={tx} />
                 </div>

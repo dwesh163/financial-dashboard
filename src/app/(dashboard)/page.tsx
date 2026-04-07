@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
 import { SummaryTable } from "@/components/summary/table";
+import { SUMMARY_SHEET } from "@/constants/spreadsheet";
 import { formatDevise } from "@/lib/devise";
 import { getSheetValues, sheetRange } from "@/lib/sheets";
 import { cn } from "@/lib/utils";
@@ -19,7 +20,9 @@ const Diff = ({ value }: { value: number }) => {
 export default async function SummaryPage() {
   const selectedYear = await getSelectedYear();
   const spreadsheetId = await getSpreadsheetId();
-  const rows = spreadsheetId ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: "Summary" }) }) : [];
+  const rows = spreadsheetId
+    ? await getSheetValues({ spreadsheetId, range: sheetRange({ title: SUMMARY_SHEET }) })
+    : [];
   const { events, indicators, totals } = parseSummary(rows);
 
   return (
