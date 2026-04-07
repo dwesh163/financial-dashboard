@@ -1,9 +1,9 @@
 import { ExternalLink, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
-import { DescriptionCell } from "@/components/transaction/description-cell";
 import { TransactionActions } from "@/components/transaction/actions";
 import { AddTransactionDialog } from "@/components/transaction/add";
+import { DescriptionCell } from "@/components/transaction/description-cell";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { SPECIAL_SHEETS } from "@/constants/spreadsheet";
