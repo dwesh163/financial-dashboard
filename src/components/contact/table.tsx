@@ -32,7 +32,10 @@ const groupContacts = (contacts: Contact[]): MerchantGroup[] => {
 
 const resolveIcon = (name: string): LucideIcon => {
   const candidate = (Icons as Record<string, unknown>)[name];
-  return typeof candidate === "function" ? (candidate as LucideIcon) : CircleHelp;
+  const isValid =
+    typeof candidate === "function" ||
+    (candidate !== null && typeof candidate === "object" && "render" in (candidate as object));
+  return isValid ? (candidate as LucideIcon) : CircleHelp;
 };
 
 // ─── ContactSection ──────────────────────────────────────────────────────────
