@@ -4,7 +4,7 @@ export default async function middleware(req: NextRequest) {
   const { auth } = await import("@/services/auth");
   const session = await auth();
 
-  if (!session) {
+  if (!session || session.error === "RefreshTokenError") {
     const url = new URL("/login", req.url);
     url.searchParams.set("callbackUrl", req.url);
     return NextResponse.redirect(url);

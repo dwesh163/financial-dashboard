@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import type { AuthTokens } from "@/types/auth";
@@ -31,7 +32,7 @@ export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
           expiresAt: account.expires_at,
           selectedYear: new Date().getFullYear(),
         };
-      if (typeof token.expiresAt === "number" && Date.now() < token.expiresAt * 1000) return token;
+      if (typeof token.expiresAt === "number" && Date.now() < (token.expiresAt - 60) * 1000) return token;
       try {
         if (!token.refreshToken) throw new Error("No refresh token available");
         if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET)
@@ -82,8 +83,7 @@ export const getSession = async () => {
 
 export const getTokens = async (): Promise<AuthTokens> => {
   const session = await auth();
-  if (!session?.accessToken) throw new Error("unauthenticated");
-  if (session.error === "RefreshTokenError") throw new Error("Token refresh failed");
+  if (!session?.accessToken || session.error === "RefreshTokenError") redirect("/login");
   return { accessToken: session.accessToken, refreshToken: session.refreshToken, expiresAt: session.expiresAt };
 };
 
