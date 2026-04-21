@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { withGoogleAuth } from "@/lib/google";
 import { getTokens } from "@/services/auth";
 import type { SheetDefinition, SpreadsheetMeta } from "@/types/google";
 
@@ -16,59 +17,40 @@ const sheetsClient = async () => {
 export const sheetRange = ({ title, columns = "A:Z" }: { title: string; columns?: string }): string =>
   `'${title}'!${columns}`;
 
-export const getSpreadsheetMeta = async ({ spreadsheetId }: { spreadsheetId: string }): Promise<SpreadsheetMeta> => {
-  const sheets = await sheetsClient();
-  const res = await sheets.spreadsheets.get({
-    spreadsheetId,
-    fields: "spreadsheetId,properties.title,sheets.properties",
+export const getSpreadsheetMeta = ({ spreadsheetId }: { spreadsheetId: string }): Promise<SpreadsheetMeta> =>
+  withGoogleAuth(async () => {
+    const sheets = await sheetsClient();
+    const res = await sheets.spreadsheets.get({
+      spreadsheetId,
+      fields: "spreadsheetId,properties.title,sheets.properties",
+    });
+    const data = res.data;
+    if (!data.spreadsheetId || !data.properties?.title || !data.sheets) throw new Error("Invalid spreadsheet data");
+    return {
+      spreadsheetId: data.spreadsheetId,
+      title: data.properties?.title ?? "Untitled",
+      sheets: (data.sheets ?? []).map((s) => ({
+        sheetId: s.properties?.sheetId ?? 0,
+        title: s.properties?.title ?? "Sheet",
+        index: s.properties?.index ?? 0,
+      })),
+    };
   });
-  const data = res.data;
 
-  if (!data.spreadsheetId || !data.properties?.title || !data.sheets) throw new Error("Invalid spreadsheet data");
-
-  return {
-    spreadsheetId: data.spreadsheetId,
-    title: data.properties?.title ?? "Untitled",
-    sheets: (data.sheets ?? []).map((s) => ({
-      sheetId: s.properties?.sheetId ?? 0,
-      title: s.properties?.title ?? "Sheet",
-      index: s.properties?.index ?? 0,
-    })),
-  };
-};
-
-export const getSheetValues = async ({
+export const getSheetValues = ({
   spreadsheetId,
   range,
 }: {
   spreadsheetId: string;
   range: string;
-}): Promise<string[][]> => {
-  const sheets = await sheetsClient();
-  const res = await sheets.spreadsheets.values.get({ spreadsheetId, range });
-  return (res.data.values as string[][]) ?? [];
-};
-
-export const appendSheetRow = async ({
-  spreadsheetId,
-  range,
-  values,
-}: {
-  spreadsheetId: string;
-  range: string;
-  values: (string | number)[];
-}): Promise<void> => {
-  const sheets = await sheetsClient();
-  await sheets.spreadsheets.values.append({
-    spreadsheetId,
-    range,
-    valueInputOption: "USER_ENTERED",
-    insertDataOption: "INSERT_ROWS",
-    requestBody: { values: [values] },
+}): Promise<string[][]> =>
+  withGoogleAuth(async () => {
+    const sheets = await sheetsClient();
+    const res = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+    return (res.data.values as string[][]) ?? [];
   });
-};
 
-export const updateSheetRow = async ({
+export const appendSheetRow = ({
   spreadsheetId,
   range,
   values,
@@ -76,44 +58,66 @@ export const updateSheetRow = async ({
   spreadsheetId: string;
   range: string;
   values: (string | number)[];
-}): Promise<void> => {
-  const sheets = await sheetsClient();
-  await sheets.spreadsheets.values.update({
-    spreadsheetId,
-    range,
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values: [values] },
+}): Promise<void> =>
+  withGoogleAuth(async () => {
+    const sheets = await sheetsClient();
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range,
+      valueInputOption: "USER_ENTERED",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: { values: [values] },
+    });
   });
-};
 
-export const ensureSheets = async ({
+export const updateSheetRow = ({
+  spreadsheetId,
+  range,
+  values,
+}: {
+  spreadsheetId: string;
+  range: string;
+  values: (string | number)[];
+}): Promise<void> =>
+  withGoogleAuth(async () => {
+    const sheets = await sheetsClient();
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [values] },
+    });
+  });
+
+export const ensureSheets = ({
   spreadsheetId,
   sheets: sheetDefs,
 }: {
   spreadsheetId: string;
   sheets: SheetDefinition[];
-}): Promise<void> => {
-  const meta = await getSpreadsheetMeta({ spreadsheetId });
-  const existing = new Set(meta.sheets.map((s) => s.title));
-  const toCreate: SheetDefinition[] = sheetDefs.filter((d) => !existing.has(d.title));
-  if (toCreate.length === 0) return;
-  const sheets = await sheetsClient();
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: { requests: toCreate.map((d) => ({ addSheet: { properties: { title: d.title } } })) },
-  });
-  for (const def of toCreate) {
-    if (!def.headers?.length) continue;
-    await sheets.spreadsheets.values.update({
+}): Promise<void> =>
+  withGoogleAuth(async () => {
+    const meta = await getSpreadsheetMeta({ spreadsheetId });
+    const existing = new Set(meta.sheets.map((s) => s.title));
+    const toCreate: SheetDefinition[] = sheetDefs.filter((d) => !existing.has(d.title));
+    if (toCreate.length === 0) return;
+    const sheets = await sheetsClient();
+    await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
-      range: sheetRange({ title: def.title, columns: `A1:${String.fromCharCode(64 + def.headers.length)}1` }),
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [def.headers] },
+      requestBody: { requests: toCreate.map((d) => ({ addSheet: { properties: { title: d.title } } })) },
     });
-  }
-};
+    for (const def of toCreate) {
+      if (!def.headers?.length) continue;
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: sheetRange({ title: def.title, columns: `A1:${String.fromCharCode(64 + def.headers.length)}1` }),
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [def.headers] },
+      });
+    }
+  });
 
-export const createSheet = async ({
+export const createSheet = ({
   spreadsheetId,
   title,
   headers,
@@ -121,23 +125,24 @@ export const createSheet = async ({
   spreadsheetId: string;
   title: string;
   headers?: readonly string[];
-}): Promise<void> => {
-  const sheets = await sheetsClient();
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: { requests: [{ addSheet: { properties: { title } } }] },
-  });
-  if (headers?.length) {
-    await sheets.spreadsheets.values.update({
+}): Promise<void> =>
+  withGoogleAuth(async () => {
+    const sheets = await sheetsClient();
+    await sheets.spreadsheets.batchUpdate({
       spreadsheetId,
-      range: sheetRange({ title, columns: `A1:${String.fromCharCode(64 + headers.length)}1` }),
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values: [[...headers]] },
+      requestBody: { requests: [{ addSheet: { properties: { title } } }] },
     });
-  }
-};
+    if (headers?.length) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: sheetRange({ title, columns: `A1:${String.fromCharCode(64 + headers.length)}1` }),
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [[...headers]] },
+      });
+    }
+  });
 
-export const deleteSheetRow = async ({
+export const deleteSheetRow = ({
   spreadsheetId,
   sheetId,
   rowIndex,
@@ -145,18 +150,19 @@ export const deleteSheetRow = async ({
   spreadsheetId: string;
   sheetId: number;
   rowIndex: number;
-}): Promise<void> => {
-  const sheets = await sheetsClient();
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId,
-    requestBody: {
-      requests: [
-        {
-          deleteDimension: {
-            range: { sheetId, dimension: "ROWS", startIndex: rowIndex - 1, endIndex: rowIndex },
+}): Promise<void> =>
+  withGoogleAuth(async () => {
+    const sheets = await sheetsClient();
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            deleteDimension: {
+              range: { sheetId, dimension: "ROWS", startIndex: rowIndex - 1, endIndex: rowIndex },
+            },
           },
-        },
-      ],
-    },
+        ],
+      },
+    });
   });
-};
