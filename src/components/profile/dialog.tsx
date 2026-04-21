@@ -4,7 +4,7 @@ import { LogOut, UserRound } from "lucide-react";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
-import { YearSelector } from "@/components/navigation/year-selector";
+import { YearSelector } from "@/components/navigation/year";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import type { ProfileDialogProps } from "@/types/props";

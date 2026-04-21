@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Loader2,
   LogOut,
-  Plus,
   UserRound,
   Users,
 } from "lucide-react";
@@ -16,7 +15,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Fragment, useState } from "react";
-import { YearSelector } from "@/components/navigation/year-selector";
+import { YearSelector } from "@/components/navigation/year";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FormError } from "@/components/ui/form-error";
@@ -80,7 +79,7 @@ export const Sidebar = ({ sheets, userName, userImage, years, selectedYear }: Si
             Aperçu
           </Link>
 
-          <div className="flex items-center pr-3">
+          <div className="flex items-center">
             <button
               type="button"
               onClick={() => setEventsOpen((o) => !o)}
@@ -98,18 +97,6 @@ export const Sidebar = ({ sheets, userName, userImage, years, selectedYear }: Si
               ) : (
                 <ChevronRight className="w-3 h-3 opacity-40" />
               )}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setError(null);
-                setNewEventName("");
-                setNewEventOpen(true);
-              }}
-              className="p-1 text-muted-foreground opacity-80 hover:text-foreground transition-colors shrink-0"
-              title="Nouvel événement"
-            >
-              <Plus className="w-3 h-3" />
             </button>
           </div>
 
