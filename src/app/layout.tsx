@@ -29,12 +29,8 @@ export const metadata: Metadata = {
     "apple-mobile-web-app-title": "JCM",
   },
   icons: {
-    icon: [
-      { url: "/images/favicon.ico" },
-      { url: "/images/icon0.svg", type: "image/svg+xml" },
-      { url: "/images/icon1.png", type: "image/png" },
-    ],
-    apple: "/images/apple-icon.png",
+    icon: [{ url: "/images/favicon.ico" }],
+    apple: "/images/apple-touch-icon.png",
   },
 };
 
