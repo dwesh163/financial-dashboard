@@ -1,16 +1,12 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Settings } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
-import { ProfileDialog } from "@/components/profile/dialog";
 import { SummaryTable } from "@/components/summary/table";
 import { formatDevise } from "@/lib/devise";
 import { cn } from "@/lib/utils";
-import { getSelectedYear, getSession } from "@/services/auth";
-import { listYearSpreadsheets } from "@/services/spreadsheet";
+import { getSelectedYear } from "@/services/auth";
 import { getSummary } from "@/services/summary";
 import type { SummaryEvent } from "@/types/summary";
-
-const VERSION = "1.3.0";
 
 const Diff = ({ value }: { value: number }) => {
   if (value === 0) return <span className="font-mono text-muted-foreground/40">—</span>;
@@ -19,12 +15,7 @@ const Diff = ({ value }: { value: number }) => {
 };
 
 export default async function SummaryPage() {
-  const [selectedYear, years, session, { events, indicators, totals }] = await Promise.all([
-    getSelectedYear(),
-    listYearSpreadsheets(),
-    getSession(),
-    getSummary(),
-  ]);
+  const [selectedYear, { events, indicators, totals }] = await Promise.all([getSelectedYear(), getSummary()]);
 
   return (
     <Fragment>
@@ -37,13 +28,9 @@ export default async function SummaryPage() {
             </p>
             <p className="font-mono text-[11px] text-muted-foreground">Vérif.&nbsp;{indicators.lastCheck || "—"}</p>
           </div>
-          <ProfileDialog
-            userName={session.user?.name ?? ""}
-            userImage={session.user?.image ?? undefined}
-            years={years}
-            selectedYear={selectedYear}
-            version={VERSION}
-          />
+          <Link href="/settings" className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+            <Settings className="w-5 h-5" />
+          </Link>
         </div>
 
         <div className="grid grid-cols-3 gap-px bg-border border border-border">
