@@ -2,14 +2,14 @@
 
 import { Delete, Lock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { Suspense, useState, useTransition } from "react";
 import { PinDigits } from "@/components/lock/digits";
 import { cn } from "@/lib/utils";
 import { unlockWithPin } from "@/services/pin";
 
 const NUMPAD_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"] as const;
 
-export default function LockPage() {
+const LockContent = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/";
   const [error, setError] = useState("");
@@ -122,5 +122,13 @@ export default function LockPage() {
         </div>
       </div>
     </main>
+  );
+};
+
+export default function LockPage() {
+  return (
+    <Suspense>
+      <LockContent />
+    </Suspense>
   );
 }
