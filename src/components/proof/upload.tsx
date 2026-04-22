@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { uploadProof } from "@/services/drive";
 import type { ProofUploadProps } from "@/types/props";
 
-export const ProofUpload = ({ onUploaded, className }: ProofUploadProps) => {
+export const ProofUpload = ({ onUploaded, transactionId, transactionDescription, className }: ProofUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploaded, setUploaded] = useState<string | null>(null);
@@ -21,6 +21,8 @@ export const ProofUpload = ({ onUploaded, className }: ProofUploadProps) => {
     try {
       const form = new FormData();
       form.append("file", file);
+      if (transactionId) form.append("transactionId", transactionId);
+      if (transactionDescription) form.append("transactionDescription", transactionDescription);
       const result = await uploadProof(form);
       setUploaded(result.name);
       onUploaded(result);

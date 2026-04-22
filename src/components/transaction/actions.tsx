@@ -80,6 +80,8 @@ export const TransactionActions = ({ transaction, sheetTitle, persons, merchants
             sheetTitle={sheetTitle}
             persons={persons}
             merchants={merchants}
+            transactionId={transaction.id}
+            transactionDescription={transaction.description}
             initial={{
               type: initialType,
               date: toIsoDate(transaction.date),

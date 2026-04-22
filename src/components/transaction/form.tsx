@@ -21,6 +21,8 @@ export const TransactionForm = ({
   persons,
   merchants,
   initial,
+  transactionId,
+  transactionDescription,
   onSubmit,
   onSuccess,
   onCancel,
@@ -138,8 +140,8 @@ export const TransactionForm = ({
         <Input placeholder="Description..." value={description} onChange={(e) => setDescription(e.target.value)} />
       </FormField>
 
-      <FormField label="Pièce justificative">
-        <ProofField value={proof} onChange={setProof} />
+      <FormField label="Preuve justificative">
+        <ProofField value={proof} onChange={setProof} transactionId={transactionId} transactionDescription={transactionDescription} />
       </FormField>
 
       {error && <FormError message={error} />}

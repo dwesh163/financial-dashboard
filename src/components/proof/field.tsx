@@ -8,7 +8,7 @@ import { isDriveUrl } from "@/lib/utils";
 import type { UploadedFile } from "@/types/google";
 import type { ProofFieldProps } from "@/types/props";
 
-export const ProofField = ({ value, onChange, placeholder = "N° de pièce..." }: ProofFieldProps) => {
+export const ProofField = ({ value, onChange, transactionId, transactionDescription, placeholder = "N° de Preuve..." }: ProofFieldProps) => {
   const [driveLabel, setDriveLabel] = useState<string | null>(() => (isDriveUrl(value) ? "Fichier PDF" : null));
 
   const handleUploaded = ({ name, webViewLink }: UploadedFile) => {
@@ -53,7 +53,7 @@ export const ProofField = ({ value, onChange, placeholder = "N° de pièce..." }
           onChange(e.target.value);
         }}
       />
-      <ProofUpload onUploaded={handleUploaded} />
+      <ProofUpload onUploaded={handleUploaded} transactionId={transactionId} transactionDescription={transactionDescription} />
     </div>
   );
 };

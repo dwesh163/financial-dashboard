@@ -16,5 +16,5 @@ export const TRANSACTION_HEADERS = [
   "Destination",
   "Exécutant",
   "Description",
-  "Pièce",
+  "Preuve",
 ] as const;
