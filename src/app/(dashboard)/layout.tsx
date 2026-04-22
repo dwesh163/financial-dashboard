@@ -1,11 +1,15 @@
+import { cookies } from "next/headers";
+import { LockWatcher } from "@/components/lock/watcher";
 import { MobileNav } from "@/components/navigation/mobile";
 import { Sidebar } from "@/components/navigation/sidebar";
+import { PIN_HASH_COOKIE } from "@/constants/pin";
 import { getSpreadsheetMeta } from "@/lib/sheets";
 import { getSelectedYear } from "@/services/auth";
 import { getSpreadsheetId, listYearSpreadsheets } from "@/services/spreadsheet";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [selectedYear, years] = await Promise.all([getSelectedYear(), listYearSpreadsheets()]);
+  const [selectedYear, years, jar] = await Promise.all([getSelectedYear(), listYearSpreadsheets(), cookies()]);
+  const isPinSet = jar.has(PIN_HASH_COOKIE);
   const spreadsheetId = await getSpreadsheetId();
   const meta = spreadsheetId ? await getSpreadsheetMeta({ spreadsheetId }) : { sheets: [] };
 
@@ -18,6 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         {children}
       </main>
       <MobileNav />
+      {isPinSet && <LockWatcher />}
     </div>
   );
 }

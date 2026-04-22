@@ -48,6 +48,10 @@ export const PinDigits = ({ onComplete, error, disabled = false, autoFocus = fal
           inputMode="numeric"
           pattern="\d"
           maxLength={1}
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore
+          data-protonpass-ignore="true"
           value={digit}
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}
