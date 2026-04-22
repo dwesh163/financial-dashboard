@@ -12,7 +12,7 @@ import type { ContactSectionProps, MerchantGroup } from "@/types/props";
 // ─── Internals ───────────────────────────────────────────────────────────────
 
 const IndexCell = ({ index }: { index: number }) => (
-  <TableCell className="font-mono text-[10px] text-muted-foreground/40 text-right w-10">
+  <TableCell className="hidden md:table-cell font-mono text-[10px] text-muted-foreground/40 text-right w-10">
     {String(index + 1).padStart(2, "0")}
   </TableCell>
 );
@@ -83,7 +83,7 @@ export const ContactSection = ({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30">
-                <TableHead className="w-10 text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold" />
+                <TableHead className="hidden md:table-cell w-10 text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold" />
                 {columns.map(({ label, className }) => (
                   <TableHead
                     key={label}
