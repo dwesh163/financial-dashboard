@@ -17,7 +17,7 @@ export default function SummaryLoading() {
               <div className="h-10 w-40 rounded" />
               <div className="h-3 w-24 rounded" />
             </div>
-            <div className="w-9 h-9 rounded-full" />
+            <div className="w-10 h-10 rounded-full" />
           </div>
         </phantom-ui>
 

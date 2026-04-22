@@ -12,21 +12,21 @@ const TableSkeleton = ({ rows, cols }: { rows: number; cols: number }) => (
         <thead>
           <tr className="bg-muted/30">
             <th className="w-10 h-8" />
-            {Array.from({ length: cols }).map((_, i) => (
-              <th key={i} className="h-8 px-4">
+            {Array.from({ length: cols }, (_, i) => `col-h-${i}`).map((key) => (
+              <th key={key} className="h-8 px-4">
                 <div className="h-2 w-16 rounded" />
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: rows }).map((_, i) => (
-            <tr key={i} className="border-t border-border">
+          {Array.from({ length: rows }, (_, i) => `row-${i}`).map((rowKey, i) => (
+            <tr key={rowKey} className="border-t border-border">
               <td className="w-10 px-4 py-3">
                 <div className="h-2 w-4 rounded" />
               </td>
-              {Array.from({ length: cols }).map((_, j) => (
-                <td key={j} className="px-4 py-3">
+              {Array.from({ length: cols }, (_, j) => `col-${i}-${j}`).map((cellKey, j) => (
+                <td key={cellKey} className="px-4 py-3">
                   <div className="h-3 rounded" style={{ width: `${60 + (((i * cols + j) * 17) % 30)}%` }} />
                 </td>
               ))}
