@@ -45,8 +45,19 @@ export type TransactionFormProps = {
   onCancel: () => void;
   submitLabel: string;
 };
-export type ProofUploadProps = { onUploaded: (file: UploadedFile) => void; transactionId?: string; transactionDescription?: string; className?: string };
-export type ProofFieldProps = { value: string; onChange: (v: string) => void; transactionId?: string; transactionDescription?: string; placeholder?: string };
+export type ProofUploadProps = {
+  onUploaded: (file: UploadedFile) => void;
+  transactionId?: string;
+  transactionDescription?: string;
+  className?: string;
+};
+export type ProofFieldProps = {
+  value: string;
+  onChange: (v: string) => void;
+  transactionId?: string;
+  transactionDescription?: string;
+  placeholder?: string;
+};
 export type TypeOption = {
   value: TransactionType;
   label: string;

@@ -19,7 +19,15 @@ export const uploadProof = async (formData: FormData): Promise<UploadedFile> => 
   return uploadFile({ folderId, filename, mimeType: file.type, buffer });
 };
 
-const buildFilename = ({ transactionId, transactionDescription, originalName }: { transactionId: string | null; transactionDescription: string | null; originalName: string }) => {
+const buildFilename = ({
+  transactionId,
+  transactionDescription,
+  originalName,
+}: {
+  transactionId: string | null;
+  transactionDescription: string | null;
+  originalName: string;
+}) => {
   if (!transactionId || !transactionDescription) return originalName;
   const id = transactionId.replace(/#/g, "");
   const name = transactionDescription.toLowerCase().replace(/-/g, "").replace(/\s+/g, "_");

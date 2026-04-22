@@ -141,7 +141,12 @@ export const TransactionForm = ({
       </FormField>
 
       <FormField label="Preuve justificative">
-        <ProofField value={proof} onChange={setProof} transactionId={transactionId} transactionDescription={transactionDescription} />
+        <ProofField
+          value={proof}
+          onChange={setProof}
+          transactionId={transactionId}
+          transactionDescription={transactionDescription}
+        />
       </FormField>
 
       {error && <FormError message={error} />}
