@@ -8,4 +8,4 @@ export const COOKIE_OPTS = {
 
 export const PIN_HASH_COOKIE = "__pin_h";
 export const LAST_ACTIVE_COOKIE = "__pin_la";
-export const INACTIVITY_THRESHOLD_MS = 1 * 60 * 1000;
+export const INACTIVITY_THRESHOLD_MS = 10 * 60 * 1000;
