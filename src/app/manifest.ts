@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "JCM - Finances",
     short_name: "Finances",
-    description: "Personal financial management",
+    description: "Application de gestion financière pour le JCM",
     start_url: "/",
     display: "standalone",
     background_color: "#0f0f0f",
