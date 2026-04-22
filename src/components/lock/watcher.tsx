@@ -20,7 +20,7 @@ export const LockWatcher = () => {
     for (const event of ACTIVITY_EVENTS) window.addEventListener(event, onActivity, { passive: true });
 
     const interval = setInterval(() => {
-if (Date.now() - lastActivity.current > INACTIVITY_THRESHOLD_MS)
+      if (Date.now() - lastActivity.current > INACTIVITY_THRESHOLD_MS)
         router.push(`/lock?callbackUrl=${encodeURIComponent(pathname)}`);
     }, CHECK_INTERVAL_MS);
 
