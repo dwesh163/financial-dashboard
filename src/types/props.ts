@@ -6,19 +6,24 @@ import type { NewTransaction, Transaction, TransactionFormValues, TransactionTyp
 export type ProvidersProps = { children: React.ReactNode };
 export type SidebarProps = {
   sheets: SheetTab[];
-  userName: string;
-  userImage?: string;
   years: number[];
   selectedYear: number;
 };
 export type YearSelectorProps = { years: number[]; selectedYear: number };
-export type ProfileDialogProps = {
-  userName: string;
-  userImage?: string;
-  years: number[];
-  selectedYear: number;
-  version: string;
+
+export type PinDigitsProps = {
+  onComplete: (pin: string) => void;
+  error?: string;
+  disabled?: boolean;
+  autoFocus?: boolean;
 };
+
+export type PinSetupProps = {
+  isPinSet: boolean;
+  onPinChange: (isSet: boolean) => void;
+};
+
+export type LockFormProps = { callbackUrl: string };
 export type PersonSelectProps = {
   persons: Contact[];
   value: string;
