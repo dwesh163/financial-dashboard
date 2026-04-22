@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, LayoutDashboard, Users } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ const tabs = [
   { href: "/", label: "Aperçu", icon: LayoutDashboard },
   { href: "/events", label: "Événements", icon: CalendarDays },
   { href: "/contacts", label: "Contacts", icon: Users },
+  { href: "/settings", label: "Paramètres", icon: Settings },
 ];
 
 export const MobileNav = () => {

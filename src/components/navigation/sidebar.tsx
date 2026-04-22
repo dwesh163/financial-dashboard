@@ -6,14 +6,14 @@ import {
   ChevronRight,
   LayoutDashboard,
   Loader2,
-  LogOut,
+  Settings,
   UserRound,
   Users,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Fragment, useState } from "react";
 import { YearSelector } from "@/components/navigation/year";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,12 @@ import { cn, toSlug } from "@/lib/utils";
 import { createEvent } from "@/services/spreadsheet";
 import type { SidebarProps } from "@/types/props";
 
-export const Sidebar = ({ sheets, userName, userImage, years, selectedYear }: SidebarProps) => {
+export const Sidebar = ({ sheets, years, selectedYear }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session } = useSession();
+  const userName = session?.user?.name ?? "";
+  const userImage = session?.user?.image ?? undefined;
   const [eventsOpen, setEventsOpen] = useState(pathname.startsWith("/events") || pathname === "/");
   const [newEventOpen, setNewEventOpen] = useState(false);
   const [newEventName, setNewEventName] = useState("");
@@ -138,29 +141,36 @@ export const Sidebar = ({ sheets, userName, userImage, years, selectedYear }: Si
               Contacts
             </Link>
           </div>
+
+          <div className="mt-3">
+            <p className="px-5 pb-1.5 text-[9px] uppercase tracking-[0.22em] text-muted-foreground/50">Système</p>
+
+            <Link
+              href="/settings"
+              className={cn(
+                "flex items-center gap-2.5 pl-5 pr-4 py-2 text-sm border-l-2 transition-all",
+                pathname === "/settings"
+                  ? "border-primary text-foreground bg-primary/10 font-medium"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-white/5",
+              )}
+            >
+              <Settings className="w-3.5 h-3.5 shrink-0" />
+              Paramètres
+            </Link>
+          </div>
         </nav>
 
         <div className="px-4 py-3 border-t border-border">
           <YearSelector years={years} selectedYear={selectedYear} />
         </div>
 
-        <div className="border-t border-border px-5 py-3.5 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            {userImage ? (
-              <Image src={userImage} alt="Avatar" width={24} height={24} className="rounded-full" />
-            ) : (
-              <UserRound className="w-8 h-8 rounded-full bg-muted text-muted-foreground p-1" />
-            )}
-            <p className="font-mono text-[11px] text-muted-foreground truncate">{userName}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="shrink-0 p-1 text-muted-foreground hover:text-foreground hover:bg-white/6 transition-colors cursor-pointer"
-            title="Se déconnecter"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
+        <div className="border-t border-border px-5 py-3.5 flex items-center gap-2">
+          {userImage ? (
+            <Image src={userImage} alt="Avatar" width={24} height={24} className="rounded-full shrink-0" />
+          ) : (
+            <UserRound className="w-6 h-6 rounded-full bg-muted text-muted-foreground p-1 shrink-0" />
+          )}
+          <p className="font-mono text-[11px] text-muted-foreground truncate">{userName}</p>
         </div>
       </aside>
 
