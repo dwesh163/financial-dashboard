@@ -138,11 +138,7 @@ export default function SettingsPage() {
             Désactiver
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={() => setStage("entering")}
-            className="font-mono text-xs text-primary"
-          >
+          <button type="button" onClick={() => setStage("entering")} className="font-mono text-xs text-primary">
             Activer
           </button>
         )}
@@ -168,11 +164,7 @@ export default function SettingsPage() {
         autoFocus
       />
       {pinError && <p className="font-mono text-xs text-destructive">{pinError}</p>}
-      <button
-        type="button"
-        onClick={resetPin}
-        className="font-mono text-xs text-muted-foreground/50"
-      >
+      <button type="button" onClick={resetPin} className="font-mono text-xs text-muted-foreground/50">
         Annuler
       </button>
     </div>
