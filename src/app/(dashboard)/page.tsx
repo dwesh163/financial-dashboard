@@ -1,10 +1,12 @@
-import { ChevronRight, Settings } from "lucide-react";
+import { ChevronRight, UserRound } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
 import { SummaryTable } from "@/components/summary/table";
 import { formatDevise } from "@/lib/devise";
 import { cn } from "@/lib/utils";
 import { getSelectedYear } from "@/services/auth";
+import { getProfileData } from "@/services/profile";
 import { getSummary } from "@/services/summary";
 import type { SummaryEvent } from "@/types/summary";
 
@@ -15,7 +17,11 @@ const Diff = ({ value }: { value: number }) => {
 };
 
 export default async function SummaryPage() {
-  const [selectedYear, { events, indicators, totals }] = await Promise.all([getSelectedYear(), getSummary()]);
+  const [{ events, indicators, totals }, profile, selectedYear] = await Promise.all([
+    getSummary(),
+    getProfileData(),
+    getSelectedYear(),
+  ]);
 
   return (
     <Fragment>
@@ -28,9 +34,23 @@ export default async function SummaryPage() {
             </p>
             <p className="font-mono text-[11px] text-muted-foreground">Vérif.&nbsp;{indicators.lastCheck || "—"}</p>
           </div>
-          <Link href="/settings" className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-            <Settings className="w-5 h-5" />
-          </Link>
+          <div className="flex items-center justify-center gap-3 h-20 w-16">
+            <Link href="/settings" className="shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden bg-muted flex items-center justify-center">
+                {profile.userImage ? (
+                  <Image
+                    src={profile.userImage}
+                    alt="Avatar"
+                    width={40}
+                    height={40}
+                    className="w-10 h-10 object-cover"
+                  />
+                ) : (
+                  <UserRound className="w-5 h-5 text-muted-foreground" />
+                )}
+              </div>
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-px bg-border border border-border">
