@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { isStale } from "@/lib/pin";
+import { COOKIE_OPTS, LAST_ACTIVE_COOKIE, PIN_HASH_COOKIE } from "./constants/pin";
 
 export default async function middleware(req: NextRequest) {
   const { auth } = await import("@/services/auth");
@@ -10,7 +12,22 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return NextResponse.next();
+  const pinHash = req.cookies.get(PIN_HASH_COOKIE)?.value;
+
+  if (req.nextUrl.pathname === "/lock") {
+    if (!pinHash) return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.next();
+  }
+
+  if (pinHash && isStale(req.cookies.get(LAST_ACTIVE_COOKIE)?.value)) {
+    const url = new URL("/lock", req.url);
+    url.searchParams.set("callbackUrl", req.url);
+    return NextResponse.redirect(url);
+  }
+
+  const response = NextResponse.next();
+  if (pinHash) response.cookies.set(LAST_ACTIVE_COOKIE, Date.now().toString(), COOKIE_OPTS);
+  return response;
 }
 
 export const config = {
