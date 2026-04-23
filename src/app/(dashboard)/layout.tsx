@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { LockGuard } from "@/components/lock/guard";
 import { LockWatcher } from "@/components/lock/watcher";
 import { MobileNav } from "@/components/navigation/mobile";
 import { Sidebar } from "@/components/navigation/sidebar";
@@ -19,7 +20,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <Sidebar sheets={meta.sheets} years={years} selectedYear={selectedYear} />
       </div>
       <main className="flex-1 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] md:px-8 md:py-8 md:pb-8 overflow-auto min-w-0 md:ml-56">
-        {children}
+        {isPinSet ? <LockGuard>{children}</LockGuard> : children}
       </main>
       <MobileNav />
       {isPinSet && <LockWatcher />}
