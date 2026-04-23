@@ -21,7 +21,7 @@ export default async function middleware(req: NextRequest) {
 
   if (pinHash && isStale(req.cookies.get(LAST_ACTIVE_COOKIE)?.value)) {
     const url = new URL("/lock", req.nextUrl.origin);
-    url.searchParams.set("callbackUrl", req.nextUrl.href);
+    url.searchParams.set("callbackUrl", new URL(req.nextUrl.href).pathname);
     return NextResponse.redirect(url);
   }
 
