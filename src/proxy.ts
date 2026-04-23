@@ -7,21 +7,21 @@ export default async function middleware(req: NextRequest) {
   const session = await auth();
 
   if (!session || session.error === "RefreshTokenError") {
-    const url = new URL("/login", req.url);
-    url.searchParams.set("callbackUrl", req.url);
+    const url = new URL("/login", req.nextUrl.origin);
+    url.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(url);
   }
 
   const pinHash = req.cookies.get(PIN_HASH_COOKIE)?.value;
 
   if (req.nextUrl.pathname === "/lock") {
-    if (!pinHash) return NextResponse.redirect(new URL("/", req.url));
+    if (!pinHash) return NextResponse.redirect(new URL("/", req.nextUrl.origin));
     return NextResponse.next();
   }
 
   if (pinHash && isStale(req.cookies.get(LAST_ACTIVE_COOKIE)?.value)) {
-    const url = new URL("/lock", req.url);
-    url.searchParams.set("callbackUrl", req.url);
+    const url = new URL("/lock", req.nextUrl.origin);
+    url.searchParams.set("callbackUrl", req.nextUrl.href);
     return NextResponse.redirect(url);
   }
 
