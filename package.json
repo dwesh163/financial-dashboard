@@ -1,6 +1,6 @@
 {
   "name": "financial-dashboard",
-  "version": "1.8.7",
+  "version": "1.9.0",
   "private": true,
   "scripts": {
     "dev": "docker run -p 63789:6379 -d --name financial-redis redis:alpine 2>/dev/null; next dev",
