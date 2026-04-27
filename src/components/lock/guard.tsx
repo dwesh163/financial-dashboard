@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
 export const LockGuard = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -10,7 +10,7 @@ export const LockGuard = ({ children }: { children: React.ReactNode }) => {
   const pathnameRef = useRef(pathname);
   pathnameRef.current = pathname;
 
-  const check = async () => {
+  const check = useCallback(async () => {
     try {
       const res = await fetch("/api/lock-status");
       const { locked } = (await res.json()) as { locked: boolean };
@@ -19,11 +19,11 @@ export const LockGuard = ({ children }: { children: React.ReactNode }) => {
     } catch {
       setReady(true);
     }
-  };
+  }, [router]);
 
   useEffect(() => {
     check();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [check]);
 
   useEffect(() => {
     const onVisible = () => {
@@ -33,7 +33,7 @@ export const LockGuard = ({ children }: { children: React.ReactNode }) => {
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [check]);
 
   if (!ready) return <div className="dark min-h-screen bg-background" />;
   return <Fragment>{children}</Fragment>;

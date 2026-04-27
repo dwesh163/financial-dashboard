@@ -6,7 +6,7 @@ export const formatTransactionId = (n: number) => `#${String(n).padStart(4, "0")
 export const parseTransactionIdNumber = (id: string): number | null => {
   if (!id.startsWith("#")) return null;
   const n = parseInt(id.slice(1), 10);
-  return isNaN(n) ? null : n;
+  return Number.isNaN(n) ? null : n;
 };
 
 export const parseTransactions = (rows: string[][]): Transaction[] => {

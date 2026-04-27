@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { PinDigitsProps } from "@/types/props";
 
+const PIN_POSITIONS = [0, 1, 2, 3, 4, 5] as const;
+
 export const PinDigits = ({ onComplete, error, disabled = false, autoFocus = false }: PinDigitsProps) => {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -38,9 +40,9 @@ export const PinDigits = ({ onComplete, error, disabled = false, autoFocus = fal
 
   return (
     <div className="flex gap-3" onPaste={handlePaste}>
-      {digits.map((digit, i) => (
+      {PIN_POSITIONS.map((i) => (
         <input
-          key={i}
+          key={`pin-${i}`}
           ref={(el) => {
             inputRefs.current[i] = el;
           }}
@@ -52,7 +54,7 @@ export const PinDigits = ({ onComplete, error, disabled = false, autoFocus = fal
           data-lpignore="true"
           data-1p-ignore
           data-protonpass-ignore="true"
-          value={digit}
+          value={digits[i] ?? ""}
           onChange={(e) => handleChange(i, e.target.value)}
           onKeyDown={(e) => handleKeyDown(i, e)}
           disabled={disabled}

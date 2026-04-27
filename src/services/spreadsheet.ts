@@ -28,7 +28,7 @@ export const listYearSpreadsheets = async (): Promise<number[]> => {
   const years: number[] = [];
   for (const file of files) {
     const match = file.name.match(/Comptes - (\d{4})$/);
-    if (match) years.push(Number.parseInt(match[1]!, 10));
+    if (match?.[1]) years.push(Number.parseInt(match[1], 10));
   }
   return years.sort((a, b) => b - a);
 };
