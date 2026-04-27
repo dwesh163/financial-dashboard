@@ -1,13 +1,15 @@
 import { SUMMARY_SHEET } from "@/constants/spreadsheet";
+import { cacheKey, getCache, setCache } from "@/lib/cache";
 import { parseDevise } from "@/lib/devise";
 import { getSheetValues, sheetRange } from "@/lib/sheets";
 import { toSlug } from "@/lib/utils";
+import { getSelectedYear, getSession } from "@/services/auth";
 import { getSpreadsheetId } from "@/services/spreadsheet";
 import type { SummaryEvent, SummaryIndicators, SummaryTotals } from "@/types/summary";
 
-export const parseSummary = (
-  rows: string[][],
-): { events: SummaryEvent[]; indicators: SummaryIndicators; totals: SummaryTotals } => {
+type SummaryData = { events: SummaryEvent[]; indicators: SummaryIndicators; totals: SummaryTotals };
+
+export const parseSummary = (rows: string[][]): SummaryData => {
   const lastDataIndex = rows.reduce((last, row, i) => (row.slice(1, 6).some((v) => v?.trim()) ? i : last), -1);
   const eventRows = rows.slice(2, lastDataIndex);
 
@@ -52,13 +54,22 @@ export const parseSummary = (
   return { events, indicators, totals };
 };
 
-export const getSummary = async (): Promise<{
-  events: SummaryEvent[];
-  indicators: SummaryIndicators;
-  totals: SummaryTotals;
-}> => {
+export const getSummaryFresh = async (): Promise<SummaryData> => {
   const spreadsheetId = await getSpreadsheetId();
   if (!spreadsheetId) return parseSummary([]);
   const rows = await getSheetValues({ spreadsheetId, range: sheetRange({ title: SUMMARY_SHEET }) });
   return parseSummary(rows);
+};
+
+export const getSummary = async (): Promise<SummaryData> => {
+  const [session, year] = await Promise.all([getSession(), getSelectedYear()]);
+  const userId = session.user?.id;
+  const key = cacheKey.summary(userId, year);
+
+  const cached = await getCache<SummaryData>(key);
+  if (cached) return cached;
+
+  const fresh = await getSummaryFresh();
+  await setCache(key, fresh);
+  return fresh;
 };

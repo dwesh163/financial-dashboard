@@ -4,8 +4,10 @@ import { cache } from "react";
 import { MERCHANTS_HEADERS, PERSONS_HEADERS } from "@/constants/contacts";
 import { CONTACTS_SPREADSHEET, FINANCES_FOLDER } from "@/constants/drive";
 import { MERCHANTS_SHEET, PERSONS_SHEET } from "@/constants/spreadsheet";
+import { cacheKey, getCache, setCache } from "@/lib/cache";
 import { createSpreadsheet, getFolder, searchFiles } from "@/lib/drive";
 import { appendSheetRow, ensureSheets, getSheetValues, sheetRange, updateSheetRow } from "@/lib/sheets";
+import { getSession } from "@/services/auth";
 import type {
   AddMerchantParams,
   AddPersonParams,
@@ -32,10 +34,8 @@ const getContactsSpreadsheetId = cache(async (): Promise<string> => {
   return spreadsheetId;
 });
 
-export const getPersons = async (): Promise<Contact[]> => {
-  const spreadsheetId = await getContactsSpreadsheetId();
-  const rows = await getSheetValues({ spreadsheetId, range: sheetRange({ title: PERSONS_SHEET, columns: "A:C" }) });
-  return rows
+const parsePersonRows = (rows: string[][]): Contact[] =>
+  rows
     .slice(1)
     .filter((r) => r[0]?.trim())
     .map((r) => ({
@@ -43,12 +43,9 @@ export const getPersons = async (): Promise<Contact[]> => {
       type: (r[2]?.trim() as ContactType) || "Person",
       iban: r[1]?.trim() || undefined,
     }));
-};
 
-export const getMerchants = async (): Promise<Contact[]> => {
-  const spreadsheetId = await getContactsSpreadsheetId();
-  const rows = await getSheetValues({ spreadsheetId, range: sheetRange({ title: MERCHANTS_SHEET, columns: "A:C" }) });
-  return rows
+const parseMerchantRows = (rows: string[][]): Contact[] =>
+  rows
     .slice(1)
     .filter((r) => r[0]?.trim())
     .map((r) => ({
@@ -56,6 +53,38 @@ export const getMerchants = async (): Promise<Contact[]> => {
       type: (r[1]?.trim() as ContactType) || "Store",
       address: r[2]?.trim(),
     }));
+
+type ContactsData = { persons: Contact[]; merchants: Contact[] };
+
+const getContactsData = cache(async (): Promise<ContactsData> => {
+  const session = await getSession();
+  const userId = session.user?.id;
+  const key = cacheKey.contacts(userId);
+
+  const cached = await getCache<ContactsData>(key);
+  if (cached) return cached;
+
+  const spreadsheetId = await getContactsSpreadsheetId();
+  const [personRows, merchantRows] = await Promise.all([
+    getSheetValues({ spreadsheetId, range: sheetRange({ title: PERSONS_SHEET, columns: "A:C" }) }),
+    getSheetValues({ spreadsheetId, range: sheetRange({ title: MERCHANTS_SHEET, columns: "A:C" }) }),
+  ]);
+  const data: ContactsData = { persons: parsePersonRows(personRows), merchants: parseMerchantRows(merchantRows) };
+  await setCache(key, data);
+  return data;
+});
+
+export const getPersons = async (): Promise<Contact[]> => (await getContactsData()).persons;
+
+export const getMerchants = async (): Promise<Contact[]> => (await getContactsData()).merchants;
+
+export const getContactsFresh = async (): Promise<ContactsData> => {
+  const spreadsheetId = await getContactsSpreadsheetId();
+  const [personRows, merchantRows] = await Promise.all([
+    getSheetValues({ spreadsheetId, range: sheetRange({ title: PERSONS_SHEET, columns: "A:C" }) }),
+    getSheetValues({ spreadsheetId, range: sheetRange({ title: MERCHANTS_SHEET, columns: "A:C" }) }),
+  ]);
+  return { persons: parsePersonRows(personRows), merchants: parseMerchantRows(merchantRows) };
 };
 
 export const getMerchantsWithRows = async (): Promise<ContactWithRow[]> => {
