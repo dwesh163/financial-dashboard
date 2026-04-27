@@ -2,7 +2,7 @@
 
 import { Delete, Lock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { PinDigits } from "@/components/lock/digits";
 import { cn } from "@/lib/utils";
 import { unlockWithPin } from "@/services/pin";
@@ -17,6 +17,10 @@ const LockContent = () => {
   const [mobilePin, setMobilePin] = useState("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/preload", { method: "POST" });
+  }, []);
 
   const submit = (pin: string) => {
     startTransition(async () => {

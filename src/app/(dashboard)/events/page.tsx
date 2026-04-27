@@ -1,5 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { RefreshWatcher } from "@/components/refresh/watcher";
 import { PageHeader } from "@/components/ui/page-header";
 import { toSlug } from "@/lib/utils";
 import { getEventSheets } from "@/services/events";
@@ -34,6 +35,7 @@ export default async function EventsPage() {
           <p className="px-5 py-12 font-mono text-sm text-muted-foreground text-center">Aucun événement.</p>
         )}
       </div>
+      <RefreshWatcher type="events" />
     </div>
   );
 }

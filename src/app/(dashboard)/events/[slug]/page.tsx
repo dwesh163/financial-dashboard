@@ -1,6 +1,7 @@
 import { ExternalLink, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Fragment } from "react";
+import { RefreshWatcher } from "@/components/refresh/watcher";
 import { TransactionActions } from "@/components/transaction/actions";
 import { AddTransactionDialog } from "@/components/transaction/add";
 import { DescriptionCell } from "@/components/transaction/description-cell";
@@ -190,6 +191,7 @@ export default async function EventPage({ params }: { params: Promise<{ slug: st
           </div>
         </Fragment>
       )}
+      <RefreshWatcher type="event" slug={slug} />
     </div>
   );
 }

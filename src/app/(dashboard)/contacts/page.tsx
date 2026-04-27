@@ -1,4 +1,5 @@
 import { ContactSection } from "@/components/contact/table";
+import { RefreshWatcher } from "@/components/refresh/watcher";
 import { PageHeader } from "@/components/ui/page-header";
 import { COMMERCE_TYPES, EXTRAS_CONTACTS, PERSONS_TYPES } from "@/constants/contacts";
 import { addCommercant, addPerson, getMerchants, getPersons } from "@/services/contacts";
@@ -66,6 +67,7 @@ export default async function ContactsPage() {
           }}
         />
       </div>
+      <RefreshWatcher type="contacts" />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { ChevronRight, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
+import { RefreshWatcher } from "@/components/refresh/watcher";
 import { SummaryTable } from "@/components/summary/table";
 import { formatDevise } from "@/lib/devise";
 import { cn } from "@/lib/utils";
@@ -149,6 +150,7 @@ export default async function SummaryPage() {
 
         <SummaryTable events={events} totals={totals} />
       </div>
+      <RefreshWatcher type="summary" />
     </Fragment>
   );
 }
