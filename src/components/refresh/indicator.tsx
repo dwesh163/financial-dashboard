@@ -1,7 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-
 type Props = {
   visible: boolean;
 };
@@ -9,8 +7,6 @@ type Props = {
 export const RefreshIndicator = ({ visible }: Props) => {
   if (!visible) return null;
   return (
-    <div className="fixed bottom-24 right-4 z-50 md:bottom-4 flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 shadow-lg">
-      <Loader2 className="w-3 h-3 animate-spin text-muted-foreground shrink-0" />
-    </div>
+    <div className="fixed bottom-24 right-4 z-50 md:bottom-4 flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2 shadow-lg"></div>
   );
 };
